@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kirana Store - Inventory Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          animation: {
+            'bounce-gentle': 'bounce-gentle 3s ease-in-out infinite',
+            'fade-in': 'fade-in 0.6s ease-out',
+            'slide-up': 'slide-up 0.5s ease-out',
+          },
+          keyframes: {
+            'bounce-gentle': {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-10px)' },
+            },
+            'fade-in': {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0px)' },
+            },
+            'slide-up': {
+              '0%': { opacity: '0', transform: 'translateY(30px)' },
+              '100%': { opacity: '1', transform: 'translateY(0px)' },
+            }
+          }
+        }
+      },
+      darkMode: 'class'
+    }
+  </script>
+  <style>
+    .glassmorphism {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .dark .glassmorphism {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .success-animation {
+      animation: pulse 0.6s ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .calculated-field {
+      background: linear-gradient(45deg, #f0f9ff, #e0f2fe);
+    }
+
+    .dark .calculated-field {
+      background: linear-gradient(45deg, #0f172a, #1e293b);
+    }
+  </style>
+</head>
+
+<body
+  class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 min-h-screen transition-all duration-500">
+
+  <!-- Header -->
+  <header class="glassmorphism sticky top-0 z-50 px-6 py-4">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div
+          class="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center text-white font-bold text-lg animate-bounce-gentle">
+          🏪
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-gray-800 dark:text-white">Kirana Store</h1>
+          <p class="text-sm text-gray-600 dark:text-gray-300">Inventory Management</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <!-- View Inventory Button -->
+        <button id="viewInventoryBtn"
+          class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 text-sm font-medium">
+          View Inventory
+        </button>
+
+        <!-- Billing Button -->
+        <button id="billing"
+          class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 text-sm font-medium">
+          Billing
+        </button>
+
+        <button id="listUpload"
+          class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 text-sm font-medium">
+          List Upload
+        </button>
+
+        <!-- Theme Toggle (Dark/Light Mode) -->
+        <button id="themeToggle"
+          class="p-2 rounded-lg glassmorphism hover:bg-white hover:bg-opacity-20 transition-all duration-200">
+          <span class="text-lg">🌙</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+      <!-- Left Column - Add Item Form -->
+      <div class="space-y-6">
+        <div class="glassmorphism rounded-2xl p-6 animate-fade-in">
+          <div class="flex items-center space-x-3 mb-6">
+            <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+              <span class="text-white text-sm">➕</span>
+            </div>
+            <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">Add New Item</h2>
+          </div>
+
+          <form id="inventoryForm" class="space-y-4">
+            <!-- Category & Item Name -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
+                <select id="category" name="category" required
+                  class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
+                  <option value="">Select category</option>
+                  <option value="fresh-produce">Fresh Produce</option>
+                  <option value="grains-staples">Grains & Staples</option>
+                  <option value="pulses-lentils">Pulses & Lentils</option>
+                  <option value="spices">Spices</option>
+                  <option value="dairy">Dairy</option>
+                  <option value="beverages">Beverages</option>
+                  <option value="oils-fats">Oils & Fats</option>
+                  <option value="instant-foods">Instant Foods</option>
+                  <option value="snacks">Snacks</option>
+                  <option value="sweets-chocolates">Sweets & Chocolates</option>
+                  <option value="bakery-breakfast">Bakery & Breakfast</option>
+                  <option value="household-items">Household Items</option>
+                  <option value="personal-care">Personal Care</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Item Name</label>
+                <input type="text" id="itemName" name="itemName" required placeholder="e.g., Basmati Rice"
+                  class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
+              </div>
+            </div>
+
+            <!-- Brand & Unit Size -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Brand</label>
+                <input type="text" id="brand" name="brand" placeholder="Enter brand name (leave empty for NA)"
+                  class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Leave empty for unbranded/local products (will
+                  default to "NA")</p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Unit Size</label>
+                <input type="text" name="unitSize" required placeholder="e.g., 1kg, 500ml"
+                  class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
+              </div>
+            </div>
+
+            <!-- Stock & GST (moved up to calculate before pricing) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Stock Quantity</label>
+                <input type="number" name="stockQuantity" required min="0" placeholder="0"
+                  class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">GST (%)</label>
+                <input type="number" id="gst" name="gst" required min="0" max="100" step="0.01"
+                  placeholder="Auto-calculated"
+                  class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
+              </div>
+            </div>
+
+            <!-- Base Price & Selling Price (Auto-calculated) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Base Price (₹)</label>
+                <input type="number" id="basePrice" name="basePrice" required min="0" step="0.01" placeholder="0.00"
+                  class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Price before GST</p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Selling Price (₹)</label>
+                <input type="number" id="sellingPrice" name="sellingPrice" required min="0" step="0.01"
+                  placeholder="0.00" readonly
+                  class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg calculated-field text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
+                <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-1">Auto-calculated (Base Price + GST)</p>
+              </div>
+            </div>
+
+            <!-- MRP & Expiry -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">MRP (₹)</label>
+                <input type="number" name="mrp" required min="0" step="0.01" placeholder="0.00"
+                  class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Expiry Date</label>
+                <input type="date" name="expiryDate" required
+                  class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
+              </div>
+            </div>
+
+            <!-- Item ID (Auto-generated) -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Item ID</label>
+              <input type="text" id="itemId" name="itemId" readonly
+                class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-400 transition-all duration-200"
+                placeholder="Auto-generated">
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Generated automatically based on item name and
+                brand</p>
+            </div>
+
+            <button type="submit"
+              class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-3 px-6 rounded-lg font-medium hover:from-emerald-600 hover:to-teal-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl">
+              <span class="flex items-center justify-center space-x-2">
+                <span>➕</span>
+                <span>Add Item to Inventory</span>
+              </span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="glassmorphism rounded-2xl p-6 animate-slide-up">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Quick Stats</h3>
+          <div class="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <div class="text-2xl font-bold text-emerald-600" id="totalItems">0</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400">Total Items</div>
+            </div>
+            <div>
+              <div class="text-2xl font-bold text-blue-600" id="totalValue">₹0</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400">Total Value</div>
+            </div>
+            <div>
+              <div class="text-2xl font-bold text-orange-600" id="lowStock">0</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400">Low Stock</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column - Inventory Display -->
+      <div class="space-y-6">
+        <div class="glassmorphism rounded-2xl p-6 animate-fade-in">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                <span class="text-white text-sm">📋</span>
+              </div>
+              <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">Current Inventory</h2>
+            </div>
+            <button id="clearInventory"
+              class="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-all duration-200">
+              Clear All
+            </button>
+          </div>
+
+          <div id="inventoryList" class="space-y-3 max-h-96 overflow-y-auto">
+            <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+              <div class="text-4xl mb-2">📦</div>
+              <p>No items in inventory yet</p>
+              <p class="text-sm">Add your first item using the form</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="glassmorphism rounded-2xl p-6 animate-slide-up">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Recent Activity</h3>
+          <div id="activityList" class="space-y-2 max-h-40 overflow-y-auto">
+            <div class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+              No recent activity
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Toast -->
+  <div id="successToast"
+    class="fixed top-4 right-4 bg-emerald-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+    <div class="flex items-center space-x-2">
+      <span>✅</span>
+      <span>Item added successfully!</span>
+    </div>
+  </div>
+
+  <!-- Error Toast -->
+  <div id="errorToast"
+    class="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+    <div class="flex items-center space-x-2">
+      <span>❌</span>
+      <span id="errorMessage">An error occurred!</span>
+    </div>
+  </div>
+
+  <script>
+    class KiranaInventoryManager {
+      constructor() {
+        this.inventory = [];
+        this.isDarkMode = false;
+        this.initializeEventListeners();
+        this.updateStats();
+        this.loadInventoryDisplay();
+      }
+
+      initializeEventListeners() {
+        // Form submission
+        document.getElementById('inventoryForm').addEventListener('submit', (e) => this.handleSubmit(e));
+
+        // Auto-fill item ID when name/brand changes
+        document.getElementById('itemName').addEventListener('input', () => this.generateItemId());
+        document.getElementById('brand').addEventListener('input', () => this.generateItemId());
+
+        // Auto-calculate GST
+        document.getElementById('category').addEventListener('change', () => this.calculateGST());
+        document.getElementById('brand').addEventListener('input', () => this.calculateGST());
+
+        // Auto-calculate selling price when base price or GST changes
+        document.getElementById('basePrice').addEventListener('input', () => this.calculateSellingPrice());
+        document.getElementById('gst').addEventListener('input', () => this.calculateSellingPrice());
+
+        // Theme toggle
+        document.getElementById('themeToggle').addEventListener('click', () => this.toggleTheme());
+
+        // Clear inventory
+        document.getElementById('clearInventory').addEventListener('click', () => this.clearInventory());
+      }
+
+      generateItemId() {
+        const itemName = document.getElementById('itemName').value.trim();
+        const brand = document.getElementById('brand').value.trim() || 'NA';
+
+        if (!itemName) {
+          document.getElementById('itemId').value = '';
+          return;
+        }
+
+        // Create a more readable ID format
+        const nameCode = itemName.substring(0, 3).toUpperCase();
+        const brandCode = brand === 'NA' ? 'NA' : brand.substring(0, 3).toUpperCase();
+        const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+
+        const itemId = `${nameCode}-${brandCode}-${randomNum}`;
+        document.getElementById('itemId').value = itemId;
+      }
+
+      calculateGST() {
+        const category = document.getElementById('category').value;
+        const brand = document.getElementById('brand').value.trim();
+        const gstField = document.getElementById('gst');
+
+        if (!category) {
+          gstField.value = '';
+          this.calculateSellingPrice(); // Recalculate selling price when GST changes
+          return;
+        }
+
+        const GST_RATES = {
+          'fresh-produce': { unpackaged: 0, packaged: 0 },
+          'grains-staples': { unpackaged: 0, packaged: 5 },
+          'pulses-lentils': { unpackaged: 0, packaged: 5 },
+          'spices': { unpackaged: 0, packaged: 5 },
+          'dairy': { unpackaged: 0, packaged: 5 },
+          'beverages': { unpackaged: 0, packaged: 5 },
+          'oils-fats': { unpackaged: 0, packaged: 5 },
+          'instant-foods': { unpackaged: 12, packaged: 12 },
+          'snacks': { unpackaged: 18, packaged: 18 },
+          'sweets-chocolates': { unpackaged: 18, packaged: 18 },
+          'bakery-breakfast': { unpackaged: 18, packaged: 18 },
+          'household-items': { unpackaged: 18, packaged: 18 },
+          'personal-care': { unpackaged: 18, packaged: 18 },
+        };
+
+        // If brand is empty or "NA", treat as unpackaged
+        const isUnpackaged = !brand || brand.toUpperCase() === 'NA';
+        const rate = GST_RATES[category];
+        const gstValue = isUnpackaged ? rate.unpackaged : rate.packaged;
+
+        gstField.value = gstValue.toFixed(2);
+
+        // Automatically calculate selling price when GST is updated
+        this.calculateSellingPrice();
+      }
+
+      calculateSellingPrice() {
+        const basePrice = parseFloat(document.getElementById('basePrice').value) || 0;
+        const gst = parseFloat(document.getElementById('gst').value) || 0;
+        const sellingPriceField = document.getElementById('sellingPrice');
+
+        if (basePrice === 0) {
+          sellingPriceField.value = '';
+          return;
+        }
+
+        // Calculate selling price: base_price + (base_price * GST / 100)
+        const gstAmount = (basePrice * gst) / 100;
+        const sellingPrice = basePrice + gstAmount;
+
+        sellingPriceField.value = sellingPrice.toFixed(2);
+
+        // Add a subtle animation to show the field updated
+        sellingPriceField.classList.add('success-animation');
+        setTimeout(() => {
+          sellingPriceField.classList.remove('success-animation');
+        }, 600);
+      }
+
+      async handleSubmit(event) {
+        event.preventDefault();
+
+        try {
+          const formData = new FormData(event.target);
+          const itemData = {
+            itemId: formData.get('itemId'),
+            category: formData.get('category'),
+            itemName: formData.get('itemName'),
+            brand: formData.get('brand')?.trim() || 'NA',
+            unitSize: formData.get('unitSize'),
+            stockQuantity: parseInt(formData.get('stockQuantity')),
+            basePrice: parseFloat(formData.get('basePrice')),
+            sellingPrice: parseFloat(formData.get('sellingPrice')),
+            mrp: parseFloat(formData.get('mrp')),
+            expiryDate: formData.get('expiryDate'),
+            gst: parseFloat(formData.get('gst'))
+          };
+
+          // Validate the data
+          if (itemData.sellingPrice > itemData.mrp) {
+            throw new Error('Selling price cannot be higher than MRP');
+          }
+
+          if (itemData.basePrice <= 0) {
+            throw new Error('Base price must be greater than 0');
+          }
+
+          // Send to Flask backend
+          const response = await fetch('http://127.0.0.1:49285/add-item', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(itemData)
+          });
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(result.error || 'Failed to add item');
+          }
+
+          // Add to local inventory for immediate UI update
+          itemData.addedAt = new Date().toISOString();
+          itemData._id = result.id;
+          this.inventory.push(itemData);
+
+          // Show success message
+          this.showToast('success', result.message || 'Item added successfully!');
+
+          // Reset form
+          event.target.reset();
+          document.getElementById('itemId').value = '';
+          document.getElementById('gst').value = '';
+          document.getElementById('sellingPrice').value = '';
+
+          // Update displays
+          this.updateStats();
+          this.loadInventoryDisplay();
+          this.addActivityLog(`Added: ${itemData.itemName}`);
+
+        } catch (error) {
+          console.error('Error adding item:', error);
+          this.showToast('error', error.message || 'Failed to add item');
+        }
+      }
+
+      showToast(type, message) {
+        const toast = document.getElementById(type + 'Toast');
+        if (type === 'error') {
+          document.getElementById('errorMessage').textContent = message;
+        }
+
+        toast.style.transform = 'translateX(0)';
+
+        setTimeout(() => {
+          toast.style.transform = 'translateX(100%)';
+        }, 3000);
+      }
+
+      updateStats() {
+        const totalItems = this.inventory.length;
+        const totalValue = this.inventory.reduce((sum, item) => sum + (item.sellingPrice * item.stockQuantity), 0);
+        const lowStock = this.inventory.filter(item => item.stockQuantity < 10).length;
+
+        document.getElementById('totalItems').textContent = totalItems;
+        document.getElementById('totalValue').textContent = `₹${totalValue.toFixed(2)}`;
+        document.getElementById('lowStock').textContent = lowStock;
+      }
+
+      loadInventoryDisplay() {
+        const inventoryList = document.getElementById('inventoryList');
+
+        if (this.inventory.length === 0) {
+          inventoryList.innerHTML = `
+            <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+              <div class="text-4xl mb-2">📦</div>
+              <p>No items in inventory yet</p>
+              <p class="text-sm">Add your first item using the form</p>
+            </div>
+          `;
+          return;
+        }
+
+        const items = this.inventory.map((item, index) => `
+          <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-all duration-200 bg-white dark:bg-slate-800">
+            <div class="flex justify-between items-start mb-2">
+              <div class="flex-1">
+                <h4 class="font-medium text-gray-900 dark:text-white">${item.itemName}</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400">${item.brand} • ${item.unitSize}</p>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <span class="inline-block mr-3">Category: ${item.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                  <span>Exp: ${new Date(item.expiryDate).toLocaleDateString()}</span>
+                </div>
+              </div>
+              <button onclick="inventoryManager.removeItem(${index})" class="text-red-500 hover:text-red-700 text-sm ml-2">
+                🗑️
+              </button>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div><span class="text-gray-600 dark:text-gray-400">Stock:</span> <span class="font-medium ${item.stockQuantity < 10 ? 'text-orange-600' : 'text-green-600'}">${item.stockQuantity}</span></div>
+              <div><span class="text-gray-600 dark:text-gray-400">Base:</span> ₹${item.basePrice.toFixed(2)}</div>
+              <div><span class="text-gray-600 dark:text-gray-400">Selling:</span> ₹${item.sellingPrice.toFixed(2)}</div>
+              <div><span class="text-gray-600 dark:text-gray-400">MRP:</span> ₹${item.mrp.toFixed(2)}</div>
+            </div>
+            <div class="flex justify-between items-center mt-2 text-xs">
+              <span class="text-gray-500 dark:text-gray-400">GST: ${item.gst}%</span>
+              <span class="text-gray-500 dark:text-gray-400 font-mono">ID: ${item.itemId}</span>
+            </div>
+          </div>
+        `).join('');
+
+        inventoryList.innerHTML = items;
+      }
+
+      removeItem(index) {
+        const removedItem = this.inventory.splice(index, 1)[0];
+        this.updateStats();
+        this.loadInventoryDisplay();
+        this.addActivityLog(`Removed: ${removedItem.itemName}`);
+        this.showToast('success', 'Item removed successfully!');
+      }
+
+      clearInventory() {
+        if (confirm('Are you sure you want to clear all inventory items?')) {
+          this.inventory = [];
+          this.updateStats();
+          this.loadInventoryDisplay();
+          this.addActivityLog('Cleared all inventory');
+          this.showToast('success', 'Inventory cleared successfully!');
+        }
+      }
+
+      addActivityLog(message) {
+        const activityList = document.getElementById('activityList');
+        const timestamp = new Date().toLocaleTimeString();
+        const activity = `
+          <div class="text-sm text-gray-600 dark:text-gray-400 border-l-2 border-gray-300 dark:border-gray-600 pl-3">
+            <span class="font-medium">${timestamp}</span> - ${message}
+          </div>
+        `;
+
+        activityList.insertAdjacentHTML('afterbegin', activity);
+
+        // Keep only last 10 activities
+        const activities = activityList.children;
+        while (activities.length > 10) {
+          activityList.removeChild(activities[activities.length - 1]);
+        }
+
+        // Remove "no activity" message if present
+        const noActivity = activityList.querySelector('.text-center');
+        if (noActivity) noActivity.remove();
+      }
+
+      toggleTheme() {
+        this.isDarkMode = !this.isDarkMode;
+        const html = document.documentElement;
+        const toggle = document.getElementById('themeToggle');
+
+        if (this.isDarkMode) {
+          html.classList.add('dark');
+          toggle.innerHTML = '<span class="text-lg">☀️</span>';
+        } else {
+          html.classList.remove('dark');
+          toggle.innerHTML = '<span class="text-lg">🌙</span>';
+        }
+      }
+    }
+
+    // Initialize the application
+    const inventoryManager = new KiranaInventoryManager();
+  </script>
+</body>
+
+</html>

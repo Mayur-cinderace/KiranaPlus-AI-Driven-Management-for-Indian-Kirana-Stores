@@ -1,0 +1,32 @@
+2025-08-17 16:37:52,814 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-17 16:37:56,296 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:49285
+2025-08-17 16:37:56,296 INFO: [33mPress CTRL+C to quit[0m
+2025-08-17 16:37:56,296 INFO:  * Restarting with stat
+2025-08-17 16:38:06,072 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-17 16:38:09,363 WARNING:  * Debugger is active!
+2025-08-17 16:38:09,383 INFO:  * Debugger PIN: 681-330-150
+2025-08-17 16:38:25,385 INFO: 127.0.0.1 - - [17/Aug/2025 16:38:25] "GET /health HTTP/1.1" 200 -
+2025-08-17 16:41:06,819 INFO: 127.0.0.1 - - [17/Aug/2025 16:41:06] "OPTIONS /signup HTTP/1.1" 200 -
+2025-08-17 16:41:07,176 INFO: 127.0.0.1 - - [17/Aug/2025 16:41:07] "[35m[1mPOST /signup HTTP/1.1[0m" 201 -
+2025-08-17 16:41:52,567 INFO: 127.0.0.1 - - [17/Aug/2025 16:41:52] "OPTIONS /login HTTP/1.1" 200 -
+2025-08-17 16:41:52,928 INFO: 127.0.0.1 - - [17/Aug/2025 16:41:52] "POST /login HTTP/1.1" 200 -
+2025-08-17 16:45:12,190 INFO: 127.0.0.1 - - [17/Aug/2025 16:45:12] "OPTIONS /add-item HTTP/1.1" 200 -
+2025-08-17 16:45:12,270 INFO: 127.0.0.1 - - [17/Aug/2025 16:45:12] "[35m[1mPOST /add-item HTTP/1.1[0m" 201 -
+2025-08-17 16:45:34,719 INFO: 127.0.0.1 - - [17/Aug/2025 16:45:34] "GET /health HTTP/1.1" 200 -
+2025-08-17 16:46:33,917 WARNING: Gemini API error for item 'qanana': 404 models/gemini-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2025-08-17 16:46:35,001 WARNING: Gemini API error for item 'qanana': 404 models/gemini-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2025-08-17 16:46:35,057 INFO: 127.0.0.1 - - [17/Aug/2025 16:46:35] "POST /upload-receipt HTTP/1.1" 200 -
+2025-08-17 16:47:17,814 INFO: 127.0.0.1 - - [17/Aug/2025 16:47:17] "GET /get-all-items HTTP/1.1" 200 -
+2025-08-17 17:00:28,075 INFO:  * Detected change in 'D:\\KiranaStores\\backend\\ocr_service.py', reloading
+2025-08-17 17:00:36,206 INFO:  * Restarting with stat
+2025-08-17 17:01:16,248 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-17 17:01:19,590 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:49285
+2025-08-17 17:01:19,591 INFO: [33mPress CTRL+C to quit[0m
+2025-08-17 17:01:19,596 INFO:  * Restarting with stat
+2025-08-17 17:01:32,532 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-17 17:01:39,525 WARNING:  * Debugger is active!
+2025-08-17 17:01:39,567 INFO:  * Debugger PIN: 681-330-150
+2025-08-17 17:04:03,996 INFO: 127.0.0.1 - - [17/Aug/2025 17:04:03] "GET /health HTTP/1.1" 200 -
+2025-08-17 17:04:50,989 INFO: 127.0.0.1 - - [17/Aug/2025 17:04:50] "POST /upload-receipt HTTP/1.1" 200 -
