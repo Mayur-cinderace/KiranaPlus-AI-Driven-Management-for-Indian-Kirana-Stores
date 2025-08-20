@@ -6,3 +6,5 @@ easyocr==1.7.0
 opencv-python==4.8.1.78
 numpy==1.24.3
 google-generativeai==0.3.0
+python-dotenv
+python-dateutil

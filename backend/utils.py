@@ -1,10 +1,21 @@
 import random
 from datetime import datetime
 from database import get_inventory_collection, is_db_connected
+import logging
+import re
+from dateutil.parser import parse
+import copy
+from cachetools import TTLCache
+
+# Cache for inventory items (5-minute TTL)
+cache = TTLCache(maxsize=1, ttl=300)
 
 def generate_unique_kirana_id(collection):
     """Generate a unique 6-digit kirana ID."""
-    max_attempts = 100  # Prevent infinite loop
+    if not hasattr(collection, 'count_documents'):
+        raise ValueError("Invalid collection provided")
+    
+    max_attempts = 100
     attempts = 0
     
     while attempts < max_attempts:
@@ -13,9 +24,10 @@ def generate_unique_kirana_id(collection):
             return kirana_id
         attempts += 1
     
-    # If we can't find a unique ID, use timestamp-based approach
+    logging.warning("Failed to generate unique kirana ID after 100 attempts, using fallback")
     timestamp = int(datetime.utcnow().timestamp())
-    return int(str(timestamp)[-6:])
+    random_suffix = random.randint(0, 999)
+    return int(f"{timestamp % 1000000}{random_suffix:03d}"[-6:])
 
 def validate_mobile_number(mobile):
     """Validate Indian mobile number format"""
@@ -23,15 +35,10 @@ def validate_mobile_number(mobile):
         return False, "Mobile number is required"
     
     mobile = mobile.strip()
-    
-    if not mobile.isdigit():
-        return False, "Mobile number should contain only digits"
-    
-    if len(mobile) != 10:
-        return False, "Mobile number should be exactly 10 digits"
-    
-    if not mobile.startswith(('6', '7', '8', '9')):
-        return False, "Mobile number should start with 6, 7, 8, or 9"
+    pattern = r'^[6-9]\d{9}$'
+    if not re.match(pattern, mobile):
+        logging.debug(f"Invalid mobile number: {mobile}")
+        return False, "Mobile number must be a 10-digit number starting with 6, 7, 8, or 9"
     
     return True, "Valid mobile number"
 
@@ -40,21 +47,28 @@ def validate_kirana_id(kirana_id):
     if not kirana_id:
         return False, "Kirana ID is required"
     
-    try:
-        kirana_id = int(kirana_id)
-        if not (100000 <= kirana_id <= 999999):
-            return False, "Kirana ID must be a 6-digit number"
-        return True, kirana_id
-    except (ValueError, TypeError):
-        return False, "Invalid Kirana ID format"
+    kirana_id = str(kirana_id).strip()
+    if not kirana_id.isdigit() or len(kirana_id) != 6:
+        logging.debug(f"Invalid kirana ID: {kirana_id}")
+        return False, "Kirana ID must be a 6-digit number"
+    
+    kirana_id = int(kirana_id)
+    if not (100000 <= kirana_id <= 999999):
+        logging.debug(f"Invalid kirana ID range: {kirana_id}")
+        return False, "Kirana ID must be between 100000 and 999999"
+    
+    return True, kirana_id
 
 def get_inventory_items_from_db():
     """Fetch all inventory items from database for fuzzy matching"""
+    if 'items' in cache:
+        return cache['items']
+    
     try:
         if not is_db_connected():
-            print("Warning: No database connection for inventory matching")
+            logging.warning("No database connection for inventory matching")
             return []
-            
+        
         collection = get_inventory_collection()
         
         items = list(collection.find({}, {
@@ -65,13 +79,14 @@ def get_inventory_items_from_db():
             'unitSize': 1,
             'sellingPrice': 1,
             'mrp': 1
-        }))
+        }).limit(1000))
         
-        print(f"Loaded {len(items)} inventory items for fuzzy matching")
+        logging.info(f"Loaded {len(items)} inventory items for fuzzy matching")
+        cache['items'] = items
         return items
         
     except Exception as e:
-        print(f"Error fetching inventory items: {e}")
+        logging.error(f"Error fetching inventory items: {e}")
         return []
 
 def calculate_inventory_summary(items):
@@ -87,33 +102,34 @@ def calculate_inventory_summary(items):
         }
     
     total_items = len(items)
-    low_stock_items = len([item for item in items if item.get('stockQuantity', 0) < 10 and item.get('stockQuantity', 0) > 0])
-    out_of_stock_items = len([item for item in items if item.get('stockQuantity', 0) == 0])
-    
-    # Calculate total inventory value
-    total_value = sum([
-        item.get('sellingPrice', 0) * item.get('stockQuantity', 0) 
-        for item in items
-    ])
-    
-    avg_value = total_value / total_items if total_items > 0 else 0
-    
-    # Check for items expiring within 30 days
-    current_date = datetime.now()
+    low_stock_items = 0
+    out_of_stock_items = 0
+    total_value = 0
     expiring_soon = 0
+    current_date = datetime.utcnow()
     
     for item in items:
+        if not all(key in item for key in ['stockQuantity', 'sellingPrice']):
+            logging.warning(f"Missing required fields in item: {item.get('_id')}")
+            continue
+        
+        stock = item.get('stockQuantity', 0)
+        if stock < 10 and stock > 0:
+            low_stock_items += 1
+        elif stock == 0:
+            out_of_stock_items += 1
+        total_value += item.get('sellingPrice', 0) * stock
+        
         if item.get('expiryDate'):
             try:
-                if isinstance(item['expiryDate'], str):
-                    expiry_date = datetime.strptime(item['expiryDate'], '%Y-%m-%d')
-                else:
-                    expiry_date = item['expiryDate']
+                expiry_date = parse(item['expiryDate']) if isinstance(item['expiryDate'], str) else item['expiryDate']
                 days_to_expiry = (expiry_date - current_date).days
                 if 0 <= days_to_expiry <= 30:
                     expiring_soon += 1
-            except:
-                pass
+            except (ValueError, TypeError):
+                continue
+    
+    avg_value = total_value / total_items if total_items > 0 else 0
     
     return {
         'totalItems': total_items,
@@ -126,36 +142,46 @@ def calculate_inventory_summary(items):
 
 def convert_item_for_json(item):
     """Convert database item for JSON serialization"""
+    item = copy.deepcopy(item)
+    
     if "_id" in item:
         item["_id"] = str(item["_id"])
     
-    # Convert datetime back to string for JSON serialization
     if "expiryDate" in item and not isinstance(item["expiryDate"], str):
-        item["expiryDate"] = item["expiryDate"].strftime("%Y-%m-%d")
+        try:
+            item["expiryDate"] = parse(item["expiryDate"]).strftime("%Y-%m-%d")
+        except (ValueError, TypeError):
+            item["expiryDate"] = ""
     if "createdAt" in item and not isinstance(item["createdAt"], str):
-        item["createdAt"] = item["createdAt"].isoformat()
+        item["createdAt"] = parse(item["createdAt"]).isoformat()
     if "updatedAt" in item and not isinstance(item["updatedAt"], str):
-        item["updatedAt"] = item["updatedAt"].isoformat()
+        item["updatedAt"] = parse(item["updatedAt"]).isoformat()
     
     return item
 
 def validate_price_logic(base_price, selling_price, mrp, gst):
     """Validate business logic for pricing"""
+    TOLERANCE = 0.01
+    
     if base_price <= 0:
+        logging.debug(f"Price validation failed: Base price {base_price} <= 0")
         return False, "Base price must be greater than 0"
     
     if selling_price <= 0:
+        logging.debug(f"Price validation failed: Selling price {selling_price} <= 0")
         return False, "Selling price must be greater than 0"
     
     if selling_price > mrp:
+        logging.debug(f"Price validation failed: Selling price {selling_price} > MRP {mrp}")
         return False, "Selling price cannot be higher than MRP"
     
     if not (0 <= gst <= 100):
+        logging.debug(f"Price validation failed: GST {gst} out of range")
         return False, "GST must be between 0 and 100"
     
-    # Validate that selling price calculation is correct
     expected_selling_price = base_price + (base_price * gst / 100)
-    if abs(selling_price - expected_selling_price) > 0.01:  # Allow small floating point differences
+    if abs(selling_price - expected_selling_price) > TOLERANCE:
+        logging.debug(f"Selling price mismatch: Expected {expected_selling_price:.2f}, Got {selling_price:.2f}")
         return False, f"Selling price mismatch. Expected: ₹{expected_selling_price:.2f}, Got: ₹{selling_price:.2f}"
     
     return True, "Price validation passed"

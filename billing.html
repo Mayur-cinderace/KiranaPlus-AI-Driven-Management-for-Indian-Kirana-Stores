@@ -1,0 +1,1720 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Kirana POS — Billing</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'bounce-gentle': 'bounce-gentle 3s ease-in-out infinite',
+                        'fade-in': 'fade-in 0.6s ease-out',
+                        'slide-up': 'slide-up 0.5s ease-out',
+                    },
+                    keyframes: {
+                        'bounce-gentle': {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        'fade-in': {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0px)' },
+                        },
+                        'slide-up': {
+                            '0%': { opacity: '0', transform: 'translateY(30px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0px)' },
+                        }
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+    </script>
+    <style>
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .dark .glassmorphism {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .suggestions {
+            position: absolute;
+            z-index: 50;
+            background: white;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(229, 231, 235, 0.3);
+            border-radius: 12px;
+            max-height: 220px;
+            overflow: auto;
+            width: 100%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .dark .suggestions {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .sugg-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(229, 231, 235, 0.1);
+        }
+
+        .sugg-item:hover {
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateX(4px);
+        }
+
+        .dark .sugg-item:hover {
+            background: rgba(99, 102, 241, 0.2);
+        }
+
+        .sugg-item:last-child {
+            border-bottom: none;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .success-animation {
+            animation: pulse 0.6s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .calculated-field {
+            background: linear-gradient(45deg, #f0f9ff, #e0f2fe);
+        }
+
+        .dark .calculated-field {
+            background: linear-gradient(45deg, #0f172a, #1e293b);
+        }
+
+        .loading-spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .stock-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+
+        .stock-high {
+            background-color: #10b981;
+        }
+
+        .stock-medium {
+            background-color: #f59e0b;
+        }
+
+        .stock-low {
+            background-color: #ef4444;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 min-h-screen transition-all duration-500">
+
+    <!-- Header -->
+    <header class="glassmorphism sticky top-0 z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div
+                    class="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center text-white font-bold text-lg animate-bounce-gentle">
+                    🛒
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800 dark:text-white">Kirana Store</h1>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Billing Desk</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <!-- Server Status Indicator -->
+                <div id="serverStatus" class="flex items-center space-x-2 text-xs">
+                    <div id="statusIndicator" class="w-2 h-2 rounded-full bg-red-500"></div>
+                    <span id="statusText" class="text-gray-600 dark:text-gray-400">Checking connection...</span>
+                </div>
+                <button id="inventoryBtn"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 text-sm font-medium">
+                    Inventory
+                </button>
+                <button id="themeToggle"
+                    class="p-2 rounded-lg glassmorphism hover:bg-white hover:bg-opacity-20 transition-all duration-200">
+                    <span class="text-lg">🌙</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+
+            <!-- Left Column - Search & Product Selection -->
+            <div class="xl:col-span-2 space-y-6">
+                <!-- Customer & Product Search Section -->
+                <div class="glassmorphism rounded-2xl p-6 animate-fade-in">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <span class="text-white text-sm">🔍</span>
+                        </div>
+                        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">Search & Select</h2>
+                    </div>
+
+                    <!-- Customer Selection -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Customer
+                            Search</label>
+                        <div class="relative">
+                            <input id="customerSearch" type="text"
+                                placeholder="Type customer name, phone or Kirana ID..."
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+                                autocomplete="off" aria-label="Search customers by name, phone or Kirana ID" />
+                            <div id="customerSugg" class="suggestions hidden"></div>
+                            <div id="customerLoadingSpinner"
+                                class="absolute right-3 top-1/2 transform -translate-y-1/2 hidden">
+                                <div class="loading-spinner"></div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="selectedCustomerId" name="customer_id" value="" />
+                        <p id="custInfo" class="mt-2 text-sm text-gray-500 dark:text-gray-400">Choose a customer to see
+                            details.</p>
+                    </div>
+
+                    <!-- Product Search -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product
+                            Search</label>
+                        <div class="relative">
+                            <input id="productSearch" placeholder="Type product name, brand, category or item ID..."
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+                                autocomplete="on" aria-label="Search products by name, brand, category or item ID" />
+                            <div id="prodSugg" class="suggestions hidden"></div>
+                            <div id="productLoadingSpinner"
+                                class="absolute right-3 top-1/2 transform -translate-y-1/2 hidden">
+                                <div class="loading-spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Details & Add to Cart -->
+                <div class="glassmorphism rounded-2xl p-6 animate-slide-up">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+                            <span class="text-white text-sm">📦</span>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Product Details</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Selected
+                                Product</label>
+                            <div id="selName" class="text-lg font-semibold text-gray-900 dark:text-white">—</div>
+                            <div id="selBrand" class="text-sm text-gray-500 dark:text-gray-400"></div>
+                            <div id="selItemId" class="text-xs text-gray-400 dark:text-gray-500"></div>
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Category</label>
+                            <div id="selCat" class="text-lg font-semibold text-gray-900 dark:text-white">—</div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">MRP</label>
+                            <div id="selMrp" class="text-lg font-semibold text-gray-900 dark:text-white">—</div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Selling
+                                Price</label>
+                            <div id="selPrice" class="text-lg font-semibold text-emerald-600">—</div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Stock</label>
+                            <div id="selStock"
+                                class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                                <span class="stock-indicator" id="stockIndicator"></span>
+                                <span>—</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Quantity</label>
+                            <input id="selQty" type="number" min="1" value="1"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" />
+                        </div>
+
+                        <div class="flex items-end">
+                            <button id="addToCartBtn"
+                                class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-3 px-6 rounded-lg font-medium hover:from-emerald-600 hover:to-teal-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shopping Cart -->
+                <div class="glassmorphism rounded-2xl p-6 animate-fade-in">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                                <span class="text-white text-sm">🛍️</span>
+                            </div>
+                            <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Shopping Cart</h2>
+                        </div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                            <span id="cartItemCount">0</span> items
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+                        <table class="min-w-full">
+                            <thead class="bg-gray-50 dark:bg-slate-800">
+                                <tr>
+                                    <th class="p-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Product</th>
+                                    <th class="p-4 text-center text-sm font-medium text-gray-700 dark:text-gray-300">Qty
+                                    </th>
+                                    <th class="p-4 text-right text-sm font-medium text-gray-700 dark:text-gray-300">MRP
+                                    </th>
+                                    <th class="p-4 text-right text-sm font-medium text-gray-700 dark:text-gray-300">Unit
+                                        Price</th>
+                                    <th class="p-4 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Total</th>
+                                    <th class="p-4 text-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cartBody"
+                                class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-slate-800">
+                                <tr>
+                                    <td colspan="6" class="p-8 text-center text-gray-500 dark:text-gray-400">
+                                        <div class="text-4xl mb-2">🛒</div>
+                                        <p>Your cart is empty</p>
+                                        <p class="text-sm">Add items using the search above</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Festival Discounts & Loyalty Points -->
+            <div class="space-y-6">
+                <!-- Festival Discounts & Loyalty Points -->
+                <div class="glassmorphism rounded-2xl p-6 animate-fade-in">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                            <span class="text-white text-sm">🎉</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Festival Discounts & Loyalty
+                        </h3>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Festival Discount</span>
+                            <span id="festivalDiscount" class="font-semibold text-gray-900 dark:text-white">—</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Discount Amount</span>
+                            <span id="discountAmount" class="font-semibold text-emerald-600">₹0.00</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Loyalty Points</span>
+                            <span id="loyaltyPoints" class="font-semibold text-gray-900 dark:text-white">0</span>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Apply Points</span>
+                                <div class="flex items-center space-x-2">
+                                    <input id="applyPointsInput" type="number" min="0" value="0"
+                                        class="w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-right" />
+                                    <button id="applyPointsBtn"
+                                        class="px-3 py-1 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700">Apply</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Points Value</span>
+                            <span id="pointsValue" class="font-semibold text-emerald-600">₹0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bill Summary -->
+                <div class="glassmorphism rounded-2xl p-6 animate-slide-up">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                            <span class="text-white text-sm">💰</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Bill Summary</h3>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div
+                            class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-gray-600 dark:text-gray-400">Subtotal (MRP)</span>
+                            <span class="font-medium text-gray-900 dark:text-white">₹<span
+                                    id="subtotalMrp">0.00</span></span>
+                        </div>
+                        <div
+                            class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-gray-600 dark:text-gray-400">Selling Price Total</span>
+                            <span class="font-medium text-emerald-600">₹<span id="subtotal">0.00</span></span>
+                        </div>
+                        <div
+                            class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-gray-600 dark:text-gray-400">You Save</span>
+                            <span class="font-medium text-green-600">₹<span id="totalSavings">0.00</span></span>
+                        </div>
+                        <div
+                            class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-gray-600 dark:text-gray-400">Loyalty Discount</span>
+                            <span class="font-medium text-green-600">₹<span
+                                    id="loyaltyDiscountAmount">0.00</span></span>
+                        </div>
+                        <div
+                            class="flex justify-between items-center py-3 border-t-2 border-gray-300 dark:border-gray-600">
+                            <span class="text-lg font-semibold text-gray-900 dark:text-white">Net Total</span>
+                            <span class="text-xl font-bold text-gray-900 dark:text-white">₹<span
+                                    id="net">0.00</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-3">
+                    <button id="previewBtn"
+                        class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
+                        Confirm & Save Bill
+                    </button>
+
+                    <button id="clearCartBtn"
+                        class="w-full bg-gray-500 text-white py-3 px-6 rounded-xl font-medium hover:bg-gray-600 transition-all duration-200">
+                        Clear Cart
+                    </button>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="glassmorphism rounded-2xl p-6 animate-fade-in">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white.mb-4">Today's Stats</h3>
+                    <div class="grid grid-cols-1 gap-3 text-center">
+                        <div class="p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
+                            <div class="text-lg font-bold text-blue-600" id="todayBills">0</div>
+                            <div class="text-xs text-gray-600 dark:text-gray-400">Bills Today</div>
+                        </div>
+                        <div class="p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
+                            <div class="text-lg font-bold text-green-600" id="todayRevenue">₹0</div>
+                            <div class="text-xs text-gray-600 dark:text-gray-400">Revenue</div>
+                        </div>
+                        <div class="p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
+                            <div class="text-lg font-bold text-orange-600" id="avgBill">₹0</div>
+                            <div class="text-xs text-gray-600 dark:text-gray-400">Avg Bill</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div id="successToast"
+        class="fixed top-4 right-4 bg-emerald-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50"
+        role="alert" aria-live="polite">
+        <div class="flex items-center space-x-2">
+            <span>✅</span>
+            <span>Action completed successfully!</span>
+        </div>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="errorToast"
+        class="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50"
+        role="alert" aria-live="polite">
+        <div class="flex items-center space-x-2">
+            <span>❌</span>
+            <span id="errorMessage">An error occurred!</span>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:49285/api';
+
+        // DOM elements
+        const productSearch = document.getElementById('productSearch');
+        const prodSugg = document.getElementById('prodSugg');
+        const customerSearch = document.getElementById('customerSearch');
+        const customerSugg = document.getElementById('customerSugg');
+        const selectedCustomerId = document.getElementById('selectedCustomerId');
+        const custInfo = document.getElementById('custInfo');
+
+        const selName = document.getElementById('selName');
+        const selBrand = document.getElementById('selBrand');
+        const selItemId = document.getElementById('selItemId');
+        const selCat = document.getElementById('selCat');
+        const selMrp = document.getElementById('selMrp');
+        const selPrice = document.getElementById('selPrice');
+        const selStock = document.getElementById('selStock');
+        const stockIndicator = document.getElementById('stockIndicator');
+        const selQty = document.getElementById('selQty');
+        const addToCartBtn = document.getElementById('addToCartBtn');
+
+        const cartBody = document.getElementById('cartBody');
+        const cartItemCount = document.getElementById('cartItemCount');
+        const subtotalMrpEl = document.getElementById('subtotalMrp');
+        const subtotalEl = document.getElementById('subtotal');
+        const totalSavingsEl = document.getElementById('totalSavings');
+        const netEl = document.getElementById('net');
+
+        const festivalDiscount = document.getElementById('festivalDiscount');
+        const discountAmount = document.getElementById('discountAmount');
+        const loyaltyPoints = document.getElementById('loyaltyPoints');
+        const pointsValue = document.getElementById('pointsValue');
+
+        // Status indicators
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+
+        const applyPointsInput = document.getElementById('applyPointsInput');
+        const applyPointsBtn = document.getElementById('applyPointsBtn');
+        const loyaltyDiscountAmountEl = document.getElementById('loyaltyDiscountAmount');
+        // Debouncing variables
+        let customerSearchTimeout = null;
+        let productSearchTimeout = null;
+
+        // State
+        let selectedProduct = null;
+        let selectedCustomer = null;
+        let cart = [];
+        let isDarkMode = false;
+        let todayStats = { bills: 0, revenue: 0 };
+
+        // Initialize the bill manager first
+        class BillManager {
+            constructor() {
+                this.cart = [];
+                this.customer = null;
+                this.discount = 0;
+                this.festivalDiscount = 0;
+                this.pointsUsed = 0;
+                this.loyaltyPoints = 0;
+                this.paymentMethod = 'cash';
+                this.festivalDates = {};
+                this.dailyFestivalDiscount = this.loadDailyFestivalDiscount();
+                this.init();
+            }
+
+            init() {
+                // Bind the confirm button
+                const confirmBtn = document.getElementById('previewBtn');
+                if (confirmBtn) {
+                    confirmBtn.addEventListener('click', () => this.handleConfirmBill());
+                }
+                // Fetch festival dates for the current year
+                this.fetchFestivalDates(new Date().getFullYear()).then(() => {
+                    this.setFestivalDiscount();
+                });
+            }
+
+            // Add item to cart
+            addToCart(productId, productData, quantity) {
+                console.log('Adding to cart:', productId, productData, quantity); // Debug log
+
+                const existingItem = this.cart.find(item => item.item_id === productId);
+
+                if (existingItem) {
+                    const newQuantity = existingItem.quantity + quantity;
+                    if (newQuantity > productData.stock_quantity) {
+                        showToast('error', `Cannot add more. Only ${productData.stock_quantity} items available`);
+                        return;
+                    }
+                    existingItem.quantity = newQuantity;
+                } else {
+                    this.cart.push({
+                        item_id: productId,
+                        item_name: productData.item_name,
+                        brand: productData.brand,
+                        selling_price: productData.selling_price,
+                        mrp: productData.mrp,
+                        quantity: quantity,
+                        stock_available: productData.stock_quantity,
+                        unit_size: productData.unit_size
+                    });
+                }
+
+                console.log('Cart after adding:', this.cart); // Debug log
+                this.updateCartDisplay();
+                this.updateTotalDisplay(this.calculateTotals());
+            }
+
+            // Remove item from cart
+            removeFromCart(productId) {
+                this.cart = this.cart.filter(item => item.item_id !== productId);
+                this.updateCartDisplay();
+                this.updateTotalDisplay(this.calculateTotals());
+            }
+
+            // Update item quantity in cart
+            updateQuantity(productId, newQuantity) {
+                const item = this.cart.find(item => item.item_id === productId);
+                if (item) {
+                    const quantity = parseInt(newQuantity);
+                    if (isNaN(quantity) || quantity < 1) {
+                        showToast('error', 'Please enter a valid quantity');
+                        return;
+                    }
+                    if (quantity > item.stock_available) {
+                        showToast('error', `Only ${item.stock_available} items available`);
+                        return;
+                    }
+                    if (quantity <= 0) {
+                        this.removeFromCart(productId);
+                    } else {
+                        item.quantity = quantity;
+                        this.updateCartDisplay();
+                        this.updateTotalDisplay(this.calculateTotals());
+                    }
+                }
+            }
+
+            // Set customer for the bill
+            setCustomer(customerId, customerData) {
+                this.customer = {
+                    id: customerId,
+                    name: customerData.name,
+                    phone: customerData.phone,
+                    kirana_id: customerData.kirana_id,
+                    loyalty_points: customerData.loyalty_points || 0
+                };
+                this.pointsUsed = 0; // Reset applied points
+                this.updateCustomerDisplay();
+                this.updateDiscountsAndPoints();
+            }
+
+            // Set discount percentage
+            setDiscount(discountPercentage) {
+                this.discount = Math.max(0, Math.min(100, discountPercentage));
+                this.updateCartDisplay();
+                this.updateTotalDisplay(this.calculateTotals());
+                this.updateDiscountsAndPoints();
+            }
+
+            async fetchFestivalDates(year) {
+                try {
+                    const festivals = [
+                        'Diwali', 'Eid al-Fitr', 'Christmas', 'Holi',
+                        'Ganesh Chaturthi', 'Independence Day', 'Republic Day', 'New Year'
+                    ];
+                    // Example using a hypothetical API; replace with actual API endpoint
+                    const response = await fetch(`https://calendarific.com/api/v2/holidays?&api_key=#&country=IN&year=${year}`);
+                    const data = await response.json();
+                    const holidays = data.response.holidays || [];
+
+                    this.festivalDates = {};
+                    holidays.forEach(holiday => {
+                        if (festivals.includes(holiday.name)) {
+                            const date = new Date(holiday.date.iso);
+                            this.festivalDates[holiday.name] = {
+                                date: date.toISOString().split('T')[0],
+                                month: date.getMonth() + 1,
+                                day: date.getDate()
+                            };
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error fetching festival dates:', error);
+                    showToast('error', 'Failed to fetch festival dates');
+                }
+            }
+
+            loadDailyFestivalDiscount() {
+                const today = new Date().toISOString().split('T')[0];
+                const storedDiscount = localStorage.getItem('festivalDiscount');
+                const storedDate = localStorage.getItem('festivalDiscountDate');
+
+                if (storedDate === today && storedDiscount) {
+                    return parseFloat(storedDiscount);
+                }
+
+                // Check if today is a festival
+                const festival = this.getCurrentFestival();
+                if (festival) {
+                    const randomDiscount = Math.floor(Math.random() * 21); // 0-20%
+                    localStorage.setItem('festivalDiscount', randomDiscount);
+                    localStorage.setItem('festivalDiscountDate', today);
+                    return randomDiscount;
+                }
+
+                localStorage.removeItem('festivalDiscount');
+                localStorage.removeItem('festivalDiscountDate');
+                return 0;
+            }
+
+            getCurrentFestival() {
+                const today = new Date();
+                const month = today.getMonth() + 1;
+                const day = today.getDate();
+
+                for (const [festival, details] of Object.entries(this.festivalDates)) {
+                    if (details.month === month && details.day === day) {
+                        return festival;
+                    }
+                }
+                return null;
+            }
+
+            // Set festival discount
+            setFestivalDiscount() {
+                this.festivalDiscount = this.dailyFestivalDiscount;
+                this.updateDiscountsAndPoints();
+                this.updateTotalDisplay(this.calculateTotals());
+            }
+
+            // Set loyalty points
+            setLoyaltyPoints(points) {
+                this.loyaltyPoints = Math.max(0, points);
+                this.updateDiscountsAndPoints();
+            }
+
+            // Set payment method
+            setPaymentMethod(method) {
+                this.paymentMethod = method;
+            }
+
+            applyLoyaltyPoints(points) {
+                if (!this.customer || points < 0) return;
+                const totals = this.calculateTotals(); // Get current totals without loyalty
+                const preLoyaltyTotal = totals.subtotal - totals.discountAmount - totals.festivalDiscountAmount;
+                const maxPoints = Math.min(this.customer.loyalty_points, Math.floor(preLoyaltyTotal / 2));
+                this.pointsUsed = Math.min(points, maxPoints);
+                this.updateDiscountsAndPoints();
+                this.updateTotalDisplay(this.calculateTotals());
+            }
+
+            // Calculate totals
+            calculateTotals() {
+                const subtotal = this.cart.reduce((sum, item) => {
+                    return sum + (item.selling_price * item.quantity);
+                }, 0);
+
+                const discountAmount = (subtotal * this.discount) / 100;
+                const festivalDiscountAmount = (subtotal * this.festivalDiscount) / 100;
+                const preLoyaltyTotal = subtotal - discountAmount - festivalDiscountAmount;
+                const loyaltyDiscountAmount = Math.min(this.pointsUsed * 2, preLoyaltyTotal);
+                const finalAmount = preLoyaltyTotal - loyaltyDiscountAmount;
+
+                return {
+                    subtotal: subtotal,
+                    discountAmount: discountAmount,
+                    festivalDiscountAmount: festivalDiscountAmount,
+                    loyaltyDiscountAmount: loyaltyDiscountAmount,
+                    finalAmount: finalAmount,
+                    itemCount: this.cart.reduce((sum, item) => sum + item.quantity, 0)
+                };
+            }
+
+            // Validate stock before creating bill
+            async validateStock() {
+                try {
+                    const response = await apiRequest('/validate-stock', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            items: this.cart.map(item => ({
+                                item_id: item.item_id,
+                                quantity: item.quantity
+                            }))
+                        })
+                    });
+
+                    if (!response.valid) {
+                        const invalidItems = response.items.filter(item => !item.valid);
+                        const errorMessage = invalidItems.map(item =>
+                            `${item.item_name}: ${item.message}`
+                        ).join('\n');
+
+                        alert(`Stock validation failed:\n${errorMessage}`);
+                        return false;
+                    }
+
+                    return true;
+                } catch (error) {
+                    console.error('Error validating stock:', error);
+                    alert('Failed to validate stock. Please try again.');
+                    return false;
+                }
+            }
+
+            // Handle confirm bill button click
+            async handleConfirmBill() {
+                try {
+                    console.log('Confirm bill clicked. Cart length:', this.cart.length); // Debug log
+                    console.log('Cart contents:', this.cart); // Debug log
+
+                    // Basic validation
+                    if (!this.cart || this.cart.length === 0) {
+                        showToast('error', 'Please add items to cart before confirming');
+                        return;
+                    }
+
+                    // Show loading state
+                    const confirmBtn = document.getElementById('previewBtn');
+                    const originalText = confirmBtn.textContent;
+                    confirmBtn.disabled = true;
+                    confirmBtn.textContent = 'Processing...';
+
+                    // Validate stock availability
+                    const stockValid = await this.validateStock();
+                    if (!stockValid) {
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = originalText;
+                        return;
+                    }
+
+                    const totals = this.calculateTotals();
+                    const pointsEarned = Math.floor(totals.subtotal / 20);
+
+                    // Create bill
+                    const billData = {
+                        customer_id: this.customer?.id || null,
+                        items: this.cart.map(item => ({
+                            item_id: item.item_id,
+                            quantity: item.quantity
+                        })),
+                        discount: this.discount,
+                        festival_discount: this.festivalDiscount,
+                        loyalty_points_used: this.pointsUsed,
+                        payment_method: this.paymentMethod
+                    };
+
+                    const response = await apiRequest('/create-bill', {
+                        method: 'POST',
+                        body: JSON.stringify(billData)
+                    });
+
+                    if (response.success) {
+                        // Update loyalty points if customer exists
+                        // Update loyalty points if customer exists
+                        if (this.customer) {
+                            try {
+                                // Fetch updated customer data to get the latest loyalty points
+                                const updatedCustomer = await apiRequest(`/customer/${this.customer.id}`);
+                                this.customer.loyalty_points = updatedCustomer.loyalty_points || 0; // Update local for display
+                                this.updateDiscountsAndPoints(); // Refresh UI with updated points
+                            } catch (error) {
+                                console.error('Error fetching updated customer data:', error);
+                                showToast('error', 'Failed to update loyalty points display');
+                            }
+                        }
+
+                        // Show success message
+                        showToast('success', `Bill created successfully! Bill #${response.bill_number}`);
+
+                        // Show receipt if available
+                        if (response.receipt) {
+                            this.showReceipt(response.receipt);
+                        }
+
+                        // Update stats
+                        todayStats.bills++;
+                        todayStats.revenue += totals.finalAmount;
+                        updateTodayStats();
+
+                        // Clear cart and reset
+                        this.clearCart();
+                        resetProductDetails();
+                        resetCustomerInfo();
+
+                    } else {
+                        throw new Error(response.error || 'Failed to create bill');
+                    }
+
+                } catch (error) {
+                    console.error('Error creating bill:', error);
+                    showToast('error', `Failed to create bill: ${error.message}`);
+                } finally {
+                    // Reset button state
+                    const confirmBtn = document.getElementById('previewBtn');
+                    if (confirmBtn) {
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = 'Confirm & Save Bill';
+                    }
+                }
+            }
+
+            // Show receipt in a modal or print
+            showReceipt(receiptData) {
+                // Create receipt HTML
+                const receiptHTML = this.generateReceiptHTML(receiptData);
+
+                // Create modal or new window to display receipt
+                const receiptWindow = window.open('', '_blank', 'width=400,height=600');
+                receiptWindow.document.write(receiptHTML);
+                receiptWindow.document.close();
+
+                // Auto print
+                setTimeout(() => {
+                    receiptWindow.print();
+                }, 500);
+            }
+
+            // Generate receipt HTML
+            generateReceiptHTML(receiptData) {
+                const receipt = receiptData || {};
+                const totals = receipt.summary || this.calculateTotals();
+                const customer = receipt.customer || this.customer || { name: 'Walk-in Customer', phone: '' };
+                const items = receipt.items || this.cart;
+                const currentFestival = this.getCurrentFestival();
+                const pointsEarned = Math.floor(totals.subtotal / 20);
+
+                return `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Receipt - ${receipt.bill_number || 'N/A'}</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin: 0;
+            padding: 20px;
+            width: 350px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .store-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .store-info {
+            font-size: 10px;
+            margin-bottom: 2px;
+        }
+        .bill-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 11px;
+        }
+        .customer-info {
+            margin-bottom: 15px;
+            font-size: 11px;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        .items-table th,
+        .items-table td {
+            padding: 3px 2px;
+            text-align: left;
+            font-size: 10px;
+        }
+        .items-table th {
+            border-bottom: 1px solid #000;
+            font-weight: bold;
+        }
+        .item-name {
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .totals {
+            border-top: 1px solid #000;
+            padding-top: 10px;
+            font-size: 11px;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3px;
+        }
+        .final-total {
+            font-weight: bold;
+            font-size: 14px;
+            border-top: 1px solid #000;
+            padding-top: 5px;
+            margin-top: 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 10px;
+            border-top: 1px dashed #000;
+            padding-top: 10px;
+        }
+        @media print {
+            body {
+                width: auto;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="store-name">SUPERMART</div>
+        <div class="store-info">123 Main Street, City</div>
+        <div class="store-info">Phone: +91 9876543210</div>
+        <div class="store-info">GST: 29ABCDE1234F1Z5</div>
+    </div>
+
+    <div class="bill-info">
+        <div>Bill No: ${receipt.bill_number || 'N/A'}</div>
+        <div>Date: ${receipt.date || new Date().toLocaleDateString()}</div>
+    </div>
+
+    <div class="customer-info">
+        <div><strong>Customer:</strong> ${customer.name}</div>
+        ${customer.phone ? `<div><strong>Phone:</strong> ${customer.phone}</div>` : ''}
+        ${this.customer ? `<div><strong>Loyalty Points Before:</strong> ${this.customer.loyalty_points + this.pointsUsed - pointsEarned}</div>` : ''}
+        ${this.pointsUsed > 0 ? `<div><strong>Points Used:</strong> ${this.pointsUsed}</div>` : ''}
+        <div><strong>Points Earned:</strong> ${pointsEarned}</div>
+    </div>
+
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th class="text-right">Qty</th>
+                <th class="text-right">Rate</th>
+                <th class="text-right">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${items.map(item => `
+                <tr>
+                    <td class="item-name" title="${item.item_name || ''}">
+                        ${item.item_name || ''}
+                        ${item.brand ? `<br><small>${item.brand}</small>` : ''}
+                    </td>
+                    <td class="text-right">${item.quantity || 0}</td>
+                    <td class="text-right">₹${(item.selling_price || 0).toFixed(2)}</td>
+                    <td class="text-right">₹${((item.selling_price || 0) * (item.quantity || 0)).toFixed(2)}</td>
+                </tr>
+            `).join('')}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <div class="total-row">
+            <span>Subtotal:</span>
+            <span>₹${(totals.subtotal || 0).toFixed(2)}</span>
+        </div>
+        ${totals.discountAmount && totals.discountAmount > 0 ? `
+            <div class="total-row">
+                <span>Discount (${this.discount || 0}%):</span>
+                <span>-₹${(totals.discountAmount || 0).toFixed(2)}</span>
+            </div>
+        ` : ''}
+        ${totals.festivalDiscountAmount && totals.festivalDiscountAmount > 0 ? `
+            <div class="total-row">
+                <span>${currentFestival || 'Festival'} Discount (${this.festivalDiscount || 0}%):</span>
+                <span>-₹${(totals.festivalDiscountAmount || 0).toFixed(2)}</span>
+            </div>
+        ` : ''}
+        ${totals.loyaltyDiscountAmount && totals.loyaltyDiscountAmount > 0 ? `
+            <div class="total-row">
+                <span>Loyalty Discount (${this.pointsUsed} pts):</span>
+                <span>-₹${(totals.loyaltyDiscountAmount || 0).toFixed(2)}</span>
+            </div>
+        ` : ''}
+        <div class="total-row final-total">
+            <span>Total Amount:</span>
+            <span>₹${(totals.finalAmount || 0).toFixed(2)}</span>
+        </div>
+        <div class="total-row">
+            <span>Payment Method:</span>
+            <span>${(this.paymentMethod || 'cash').toUpperCase()}</span>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div>Thank you for your business!</div>
+        <div>Visit again!</div>
+        <div style="margin-top: 10px;">
+            <small>This is a computer generated receipt</small>
+        </div>
+    </div>
+</body>
+</html>
+        `;
+            }
+
+            // Clear cart and reset form
+            clearCart() {
+                this.cart = [];
+                this.customer = null;
+                this.discount = 0;
+                this.festivalDiscount = 0;
+                this.pointsUsed = 0;
+                this.loyaltyPoints = 0;
+                this.paymentMethod = 'cash';
+                this.updateCartDisplay();
+                this.updateCustomerDisplay();
+                this.updateTotalDisplay(this.calculateTotals());
+                this.updateDiscountsAndPoints();
+            }
+
+            // Update cart display
+            updateCartDisplay() {
+                console.log('Updating cart display. Cart length:', this.cart.length); // Debug log
+
+                if (this.cart.length === 0) {
+                    cartBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="p-8 text-center text-gray-500 dark:text-gray-400">
+                        <div class="text-4xl mb-2">🛒</div>
+                        <p>Your cart is empty</p>
+                        <p class="text-sm">Add items using the search above</p>
+                    </td>
+                </tr>
+            `;
+                    cartItemCount.textContent = '0';
+                    return;
+                }
+
+                const html = this.cart.map((item, index) => {
+                    const unitPrice = item.selling_price;
+                    const total = unitPrice * item.quantity;
+
+                    return `
+                <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
+                    <td class="p-4">
+                        <div class="font-medium text-gray-900 dark:text-white">${item.item_name}</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">${item.brand}</div>
+                        <div class="text-xs text-gray-500">${item.unit_size || ''}</div>
+                    </td>
+                    <td class="p-4 text-center">
+                        <input type="number" min="1" max="${item.stock_available}" value="${item.quantity}" 
+                               class="w-16 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-slate-800 text-center text-gray-900 dark:text-white"
+                               onchange="billManager.updateQuantity('${item.item_id}', this.value);">
+                    </td>
+                    <td class="p-4 text-right text-gray-900 dark:text-white">₹${formatMoney(item.mrp)}</td>
+                    <td class="p-4 text-right font-medium text-emerald-600">₹${formatMoney(unitPrice)}</td>
+                    <td class="p-4 text-right font-semibold text-gray-900 dark:text-white">₹${formatMoney(total)}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="billManager.removeFromCart('${item.item_id}');" 
+                                class="text-red-500 hover:text-red-700 transition-colors p-1">
+                            🗑️
+                        </button>
+                    </td>
+                </tr>
+            `;
+                }).join('');
+
+                cartBody.innerHTML = html;
+                cartItemCount.textContent = this.cart.length;
+            }
+
+            // Update customer display
+            updateCustomerDisplay() {
+                // Update UI if customer is set
+                if (this.customer) {
+                    custInfo.textContent = `Selected: ${this.customer.name} (${this.customer.phone})`;
+                    this.updateDiscountsAndPoints();
+                } else {
+                    custInfo.textContent = 'Choose a customer to see details.';
+                    this.updateDiscountsAndPoints();
+                }
+            }
+
+            // Update discounts and loyalty points display
+            updateDiscountsAndPoints() {
+                const totals = this.calculateTotals();
+                const currentFestival = this.getCurrentFestival();
+                if (festivalDiscount) {
+                    festivalDiscount.textContent = currentFestival ?
+                        `${currentFestival} (${this.festivalDiscount}%)` : 'No Active Festival';
+                }
+                if (discountAmount) {
+                    discountAmount.textContent = `₹${formatMoney(totals.festivalDiscountAmount)}`;
+                }
+                if (loyaltyPoints) {
+                    loyaltyPoints.textContent = this.customer ? this.customer.loyalty_points : 0;
+                }
+                if (pointsValue) {
+                    pointsValue.textContent = `₹${formatMoney(this.customer ? this.customer.loyalty_points * 2 : 0)}`;
+                }
+                // Disable apply input if no customer
+                if (applyPointsInput) applyPointsInput.disabled = !this.customer;
+                if (applyPointsBtn) applyPointsBtn.disabled = !this.customer;
+            }
+
+            // Update total display
+            updateTotalDisplay(totals) {
+                // Update total amount display elements
+                if (subtotalEl) subtotalEl.textContent = formatMoney(totals.subtotal);
+                if (totalSavingsEl) {
+                    const totalSavings = this.cart.reduce((sum, item) =>
+                        sum + ((item.mrp - item.selling_price) * item.quantity), 0) + totals.festivalDiscountAmount + totals.loyaltyDiscountAmount;
+                    totalSavingsEl.textContent = formatMoney(totalSavings);
+                }
+                if (netEl) netEl.textContent = formatMoney(totals.finalAmount);
+                if (cartItemCount) cartItemCount.textContent = totals.itemCount;
+
+                // Update MRP total
+                if (subtotalMrpEl) {
+                    const mrpTotal = this.cart.reduce((sum, item) =>
+                        sum + (item.mrp * item.quantity), 0);
+                    subtotalMrpEl.textContent = formatMoney(mrpTotal);
+                }
+
+                // Update loyalty discount display
+                if (loyaltyDiscountAmountEl) loyaltyDiscountAmountEl.textContent = formatMoney(totals.loyaltyDiscountAmount);
+            }
+        }
+
+        // Initialize the bill manager
+        const billManager = new BillManager();
+
+        if (applyPointsBtn) {
+            applyPointsBtn.addEventListener('click', () => {
+                const points = parseInt(applyPointsInput.value) || 0;
+                billManager.applyLoyaltyPoints(points);
+                // Optional: Reset input after apply
+                applyPointsInput.value = 0;
+            });
+        }
+        // Utility functions
+        function formatMoney(n) {
+            return new Intl.NumberFormat('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(n || 0);
+        }
+
+        function showToast(type, message) {
+            const toast = document.getElementById(type + 'Toast');
+            if (type === 'error') {
+                const errorMsg = document.getElementById('errorMessage');
+                if (errorMsg) errorMsg.textContent = message;
+            }
+            if (toast) {
+                toast.style.transform = 'translateX(0)';
+                setTimeout(() => {
+                    toast.style.transform = 'translateX(100%)';
+                }, 3000);
+            } else {
+                // Fallback to alert if toast elements don't exist
+                alert(`${type.toUpperCase()}: ${message}`);
+            }
+        }
+
+        function hideLoader(element) {
+            if (element) element.classList.add('hidden');
+        }
+
+        function showLoader(element) {
+            if (element) element.classList.remove('hidden');
+        }
+
+        function updateServerStatus(isOnline) {
+            if (statusIndicator && statusText) {
+                if (isOnline) {
+                    statusIndicator.className = 'w-2 h-2 rounded-full bg-green-500';
+                    statusText.textContent = 'Connected';
+                } else {
+                    statusIndicator.className = 'w-2 h-2 rounded-full bg-red-500';
+                    statusText.textContent = 'Offline';
+                }
+            }
+        }
+
+        function updateStockIndicator(quantity) {
+            if (selStock) {
+                const stockSpan = selStock.querySelector('span:last-child');
+                if (stockSpan) stockSpan.textContent = quantity;
+
+                // Update stock indicator color
+                if (stockIndicator) {
+                    if (quantity > 20) {
+                        stockIndicator.className = 'stock-indicator stock-high';
+                    } else if (quantity > 5) {
+                        stockIndicator.className = 'stock-indicator stock-medium';
+                    } else {
+                        stockIndicator.className = 'stock-indicator stock-low';
+                    }
+                }
+            }
+        }
+
+        async function apiRequest(endpoint, options = {}) {
+            try {
+                // Strip any full URL prefix to avoid duplication
+                const cleanEndpoint = endpoint.replace(/^http:\/\/localhost:49285\/api/, '');
+                const url = `${API_BASE_URL}${cleanEndpoint.startsWith('/') ? cleanEndpoint : '/' + cleanEndpoint}`;
+
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                updateServerStatus(true);
+                return data;
+            } catch (error) {
+                updateServerStatus(false);
+                console.error('API request failed:', error);
+                throw error;
+            }
+        }
+
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                isDarkMode = !isDarkMode;
+                const html = document.documentElement;
+
+                if (isDarkMode) {
+                    html.classList.add('dark');
+                    themeToggle.innerHTML = '<span class="text-lg">☀️</span>';
+                } else {
+                    html.classList.remove('dark');
+                    themeToggle.innerHTML = '<span class="text-lg">🌙</span>';
+                }
+            });
+        }
+
+        // Product search functionality
+        if (productSearch) {
+            productSearch.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                const productLoadingSpinner = document.getElementById('productLoadingSpinner');
+
+                if (productSearchTimeout) {
+                    clearTimeout(productSearchTimeout);
+                }
+
+                if (query.length < 2) {
+                    if (prodSugg) prodSugg.classList.add('hidden');
+                    hideLoader(productLoadingSpinner);
+                    return;
+                }
+
+                showLoader(productLoadingSpinner);
+
+                productSearchTimeout = setTimeout(async () => {
+                    try {
+                        await searchProducts(query);
+                    } catch (error) {
+                        showToast('error', 'Failed to search products');
+                    } finally {
+                        hideLoader(productLoadingSpinner);
+                    }
+                }, 500);
+            });
+        }
+
+        async function searchProducts(query) {
+            try {
+                const products = await apiRequest(`/search-products?q=${encodeURIComponent(query)}`);
+
+                if (products.length === 0) {
+                    if (prodSugg) prodSugg.classList.add('hidden');
+                    return;
+                }
+
+                const html = products.slice(0, 8).map(product => {
+                    const discount = product.mrp > 0 ? ((product.mrp - product.selling_price) / product.mrp * 100).toFixed(0) : 0;
+                    const stockClass = product.stock_quantity > 20 ? 'stock-high' :
+                        product.stock_quantity > 5 ? 'stock-medium' : 'stock-low';
+
+                    return `
+                <div class="sugg-item" data-product-id="${product.id}">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-900 dark:text-white">${product.item_name}</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">${product.brand} • ${product.unit_size}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-500 flex items-center">
+                                <span>${product.category}</span>
+                                <span class="mx-1">•</span>
+                                <span class="stock-indicator ${stockClass}"></span>
+                                <span>Stock: ${product.stock_quantity}</span>
+                            </div>
+                            ${product.item_id ? `<div class="text-xs text-gray-400">ID: ${product.item_id}</div>` : ''}
+                        </div>
+                        <div class="text-right ml-3">
+                            <div class="font-semibold text-gray-900 dark:text-white">₹${product.selling_price}</div>
+                            ${discount > 0 ? `
+                                <div class="text-xs text-gray-500 line-through">₹${product.mrp}</div>
+                                <div class="text-xs text-emerald-600">${discount}% off</div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+                }).join('');
+
+                if (prodSugg) {
+                    prodSugg.innerHTML = html;
+                    prodSugg.classList.remove('hidden');
+
+                    // Add click handlers
+                    prodSugg.querySelectorAll('.sugg-item').forEach(item => {
+                        item.addEventListener('click', () => {
+                            const productId = item.dataset.productId;
+                            selectProduct(productId, products.find(p => p.id === productId));
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('Error searching products:', error);
+                showToast('error', 'Failed to search products');
+            }
+        }
+
+        function selectProduct(productId, productData) {
+            selectedProduct = productData;
+            if (!selectedProduct) return;
+
+            // Update product details
+            if (selName) selName.textContent = selectedProduct.item_name;
+            if (selBrand) selBrand.textContent = `${selectedProduct.brand} • ${selectedProduct.unit_size}`;
+            if (selItemId) selItemId.textContent = selectedProduct.item_id ? `Item ID: ${selectedProduct.item_id}` : '';
+            if (selCat) selCat.textContent = selectedProduct.category;
+            if (selMrp) selMrp.textContent = `₹${formatMoney(selectedProduct.mrp)}`;
+            if (selPrice) selPrice.textContent = `₹${formatMoney(selectedProduct.selling_price)}`;
+
+            updateStockIndicator(selectedProduct.stock_quantity);
+
+            // Update quantity max based on stock
+            if (selQty) {
+                selQty.setAttribute('max', selectedProduct.stock_quantity);
+                if (parseInt(selQty.value) > selectedProduct.stock_quantity) {
+                    selQty.value = selectedProduct.stock_quantity;
+                }
+            }
+
+            // Enable add to cart button if stock is available
+            if (addToCartBtn) addToCartBtn.disabled = selectedProduct.stock_quantity === 0;
+
+            // Clear search and hide suggestions
+            if (productSearch) productSearch.value = `${selectedProduct.item_name} - ${selectedProduct.brand}`;
+            if (prodSugg) prodSugg.classList.add('hidden');
+        }
+
+        // Customer search functionality
+        if (customerSearch) {
+            customerSearch.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                const customerLoadingSpinner = document.getElementById('customerLoadingSpinner');
+
+                if (customerSearchTimeout) {
+                    clearTimeout(customerSearchTimeout);
+                }
+
+                if (query.length < 2) {
+                    if (customerSugg) customerSugg.classList.add('hidden');
+                    hideLoader(customerLoadingSpinner);
+                    return;
+                }
+
+                showLoader(customerLoadingSpinner);
+
+                customerSearchTimeout = setTimeout(async () => {
+                    try {
+                        await searchCustomers(query);
+                    } catch (error) {
+                        showToast('error', 'Failed to search customers');
+                    } finally {
+                        hideLoader(customerLoadingSpinner);
+                    }
+                }, 500);
+            });
+        }
+
+        async function searchCustomers(query) {
+            try {
+                const customers = await apiRequest(`/search-customers?q=${encodeURIComponent(query)}`);
+
+                if (customers.length === 0) {
+                    if (customerSugg) customerSugg.classList.add('hidden');
+                    return;
+                }
+
+                const html = customers.slice(0, 8).map(customer => `
+            <div class="sugg-item" data-customer-id="${customer.id}">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <div class="font-medium text-gray-900 dark:text-white flex items-center">
+                            ${customer.name}
+                            ${customer.is_verified ? '<span class="ml-1 text-green-500 text-xs">✓</span>' : ''}
+                        </div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">${customer.phone}</div>
+                        ${customer.kirana_id ? `<div class="text-xs text-gray-500">ID: ${customer.kirana_id}</div>` : ''}
+                    </div>
+                    <div class="text-right text-xs">
+                        <div class="text-blue-600 font-medium">${customer.role || 'Customer'}</div>
+                        <div class="text-gray-500">Points: ${customer.loyalty_points || 0}</div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+                if (customerSugg) {
+                    customerSugg.innerHTML = html;
+                    customerSugg.classList.remove('hidden');
+
+                    // Add click handlers
+                    customerSugg.querySelectorAll('.sugg-item').forEach(item => {
+                        item.addEventListener('click', () => {
+                            const customerId = item.dataset.customerId;
+                            selectCustomer(customerId, customers.find(c => c.id === customerId));
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('Error searching customers:', error);
+                showToast('error', 'Failed to search customers');
+            }
+        }
+
+        function selectCustomer(customerId, customerData) {
+            selectedCustomer = customerData;
+            if (!selectedCustomer) return;
+
+            if (selectedCustomerId) selectedCustomerId.value = customerId;
+
+            // Update customer info display
+            if (custInfo) custInfo.textContent = `Selected: ${selectedCustomer.name} (${selectedCustomer.phone})`;
+
+            // Update BillManager customer
+            billManager.setCustomer(customerId, customerData);
+
+            // Apply festival discount
+            billManager.setFestivalDiscount();
+        }
+
+        // Add to cart functionality
+        if (addToCartBtn) {
+            addToCartBtn.addEventListener('click', () => {
+                if (!selectedProduct) {
+                    showToast('error', 'Please select a product first');
+                    return;
+                }
+
+                const quantity = parseInt(selQty?.value) || 1;
+                if (quantity < 1) {
+                    showToast('error', 'Quantity must be at least 1');
+                    return;
+                }
+
+                if (quantity > selectedProduct.stock_quantity) {
+                    showToast('error', `Only ${selectedProduct.stock_quantity} items available in stock`);
+                    return;
+                }
+
+                // Add to cart using BillManager
+                billManager.addToCart(selectedProduct.id, selectedProduct, quantity);
+                showToast('success', `${selectedProduct.item_name} added to cart!`);
+
+                // Reset quantity to 1
+                if (selQty) selQty.value = 1;
+            });
+        }
+
+        // Clear cart functionality
+        const clearCartBtn = document.getElementById('clearCartBtn');
+        if (clearCartBtn) {
+            clearCartBtn.addEventListener('click', () => {
+                if (billManager.cart.length === 0) {
+                    showToast('error', 'Cart is already empty');
+                    return;
+                }
+
+                billManager.clearCart();
+                showToast('success', 'Cart cleared successfully');
+            });
+        }
+
+        function resetProductDetails() {
+            if (selName) selName.textContent = '—';
+            if (selBrand) selBrand.textContent = '';
+            if (selItemId) selItemId.textContent = '';
+            if (selCat) selCat.textContent = '—';
+            if (selMrp) selMrp.textContent = '—';
+            if (selPrice) selPrice.textContent = '—';
+            if (selStock) selStock.innerHTML = '<span class="stock-indicator" id="stockIndicator"></span><span>—</span>';
+            if (selQty) {
+                selQty.value = 1;
+                selQty.removeAttribute('max');
+            }
+            if (productSearch) productSearch.value = '';
+        }
+
+        function resetCustomerInfo() {
+            if (custInfo) custInfo.textContent = 'Choose a customer to see details.';
+            billManager.setCustomer(null, {});
+            billManager.setFestivalDiscount();
+        }
+
+        function updateTodayStats() {
+            const todayBillsEl = document.getElementById('todayBills');
+            const todayRevenueEl = document.getElementById('todayRevenue');
+            const avgBillEl = document.getElementById('avgBill');
+
+            if (todayBillsEl) todayBillsEl.textContent = todayStats.bills;
+            if (todayRevenueEl) todayRevenueEl.textContent = `₹${formatMoney(todayStats.revenue)}`;
+
+            const avgBill = todayStats.bills > 0 ? todayStats.revenue / todayStats.bills : 0;
+            if (avgBillEl) avgBillEl.textContent = `₹${formatMoney(avgBill)}`;
+        }
+
+        // Inventory button (placeholder)
+        const inventoryBtn = document.getElementById('inventoryBtn');
+        if (inventoryBtn) {
+            inventoryBtn.addEventListener('click', () => {
+                showToast('success', 'Inventory management coming soon!');
+            });
+        }
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (prodSugg && !prodSugg.contains(e.target) && e.target !== productSearch) {
+                prodSugg.classList.add('hidden');
+            }
+            if (customerSugg && !customerSugg.contains(e.target) && e.target !== customerSearch) {
+                customerSugg.classList.add('hidden');
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                if (productSearch) productSearch.focus();
+            }
+            if (e.ctrlKey && e.key === 'u') {
+                e.preventDefault();
+                if (customerSearch) customerSearch.focus();
+            }
+            if (e.key === 'Escape') {
+                if (prodSugg) prodSugg.classList.add('hidden');
+                if (customerSugg) customerSugg.classList.add('hidden');
+            }
+        });
+
+        // Test server connection on load
+        async function testConnection() {
+            try {
+                const data = await apiRequest('/search-customers?q=test');
+                console.log('Connection test successful:', data);
+            } catch (error) {
+                console.error('Connection test failed:', error);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await testConnection();
+            } catch (error) {
+                console.warn('Initial connection test failed:', error);
+            }
+        });
+
+        // Example usage functions for external calls
+        function addItemToCart(productId, productData, quantity) {
+            billManager.addToCart(productId, productData, quantity);
+        }
+
+        function removeItemFromCart(productId) {
+            billManager.removeFromCart(productId);
+        }
+
+        function updateItemQuantity(productId, quantity) {
+            billManager.updateQuantity(productId, quantity);
+        }
+
+        function setCustomerForBill(customerId, customerData) {
+            billManager.setCustomer(customerId, customerData);
+        }
+
+        function setDiscountPercentage(discount) {
+            billManager.setDiscount(discount);
+        }
+
+        function setFestivalDiscountPercentage(discount) {
+            billManager.setFestivalDiscount(discount);
+        }
+
+        function setPaymentMethod(method) {
+            billManager.setPaymentMethod(method);
+        }
+    </script>
+
+</body>
+
+</html>

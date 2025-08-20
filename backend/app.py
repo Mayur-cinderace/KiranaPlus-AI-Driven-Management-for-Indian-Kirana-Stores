@@ -7,46 +7,84 @@ from routes.health_routes import health_bp
 from routes.ocr_routes import ocr_bp
 from routes.auth_routes import auth_bp
 from routes.inventory_routes import inventory_bp
+from routes.search_routes import search_bp
+from routes.bill_routes import bill_bp
 import logging
 import os
-
+from logging.handlers import RotatingFileHandler
 
 def create_app():
     """Application factory pattern"""
     app = Flask(__name__)
     
+    # Load configuration
+    app.config.from_object(Config)
+    
     # Configure CORS
-    CORS(app, 
-         origins=["http://localhost:*", "http://127.0.0.1:*", "file://*", "*"],
-         methods=["GET", "POST", "PUT", "DELETE"],
-         allow_headers=["Content-Type", "Accept"])
+    CORS(app, resources={r"/api/*": {
+    "origins": [
+        "http://127.0.0.1:8000",
+        "http://localhost:8000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3000"
+    ],
+    "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "allow_headers": ["Content-Type", "Accept"]
+}})
     
     # Configure logging
+    log_dir = os.path.join(os.path.dirname(__file__), 'logs')
+    os.makedirs(log_dir, exist_ok=True)
+    handler = RotatingFileHandler(
+        os.path.join(log_dir, 'flask_errors.log'),
+        maxBytes=1000000,
+        backupCount=5
+    )
+    handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s %(levelname)s: %(message)s',
         handlers=[
-            logging.FileHandler('flask_errors.log'),
+            handler,
             logging.StreamHandler()
         ]
     )
     
     # Create uploads directory if it doesn't exist
-    os.makedirs('uploads', exist_ok=True)
+    os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
     
     # Initialize database connection
-    init_db()
+    if not init_db():
+        logging.error("Failed to initialize database")
+        raise RuntimeError("Database initialization failed")
     
     # Initialize OCR service
-    init_ocr()
+    try:
+        init_ocr()
+    except Exception as e:
+        logging.error(f"Failed to initialize OCR service: {str(e)}")
+        raise RuntimeError("OCR initialization failed")
     
     # Register blueprints
-    app.register_blueprint(health_bp)
-    app.register_blueprint(ocr_bp)
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(inventory_bp)
+    try:
+        app.register_blueprint(health_bp)
+        app.register_blueprint(ocr_bp)
+        app.register_blueprint(auth_bp)
+        app.register_blueprint(inventory_bp)
+        app.register_blueprint(search_bp)
+        app.register_blueprint(bill_bp)
+    except Exception as e:
+        logging.error(f"Failed to register blueprint: {str(e)}")
+        raise
     
     # Error handlers
+    @app.errorhandler(400)
+    def bad_request(error):
+        return {"error": "Bad request"}, 400
+
+    @app.errorhandler(401)
+    def unauthorized(error):
+        return {"error": "Unauthorized"}, 401
+
     @app.errorhandler(404)
     def not_found(error):
         return {"error": "Endpoint not found"}, 404
@@ -57,12 +95,15 @@ def create_app():
 
     @app.errorhandler(500)
     def internal_error(error):
+        logging.error(f"Internal server error: {str(error)}")
         return {"error": "Internal server error"}, 500
     
     return app
 
 
 if __name__ == "__main__":
+    if os.getenv('FLASK_ENV') == 'production':
+        raise RuntimeError("Debug mode should not be used in production")
     app = create_app()
     print("🚀 Starting Combined Kirana API Server...")
     print(f"📡 Server will be available at: http://localhost:{Config.PORT}")

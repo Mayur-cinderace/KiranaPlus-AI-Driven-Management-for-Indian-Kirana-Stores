@@ -30,3 +30,73 @@
 2025-08-17 17:01:39,567 INFO:  * Debugger PIN: 681-330-150
 2025-08-17 17:04:03,996 INFO: 127.0.0.1 - - [17/Aug/2025 17:04:03] "GET /health HTTP/1.1" 200 -
 2025-08-17 17:04:50,989 INFO: 127.0.0.1 - - [17/Aug/2025 17:04:50] "POST /upload-receipt HTTP/1.1" 200 -
+2025-08-19 21:12:20,678 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-19 21:12:24,193 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:49285
+2025-08-19 21:12:24,196 INFO: [33mPress CTRL+C to quit[0m
+2025-08-19 21:12:24,203 INFO:  * Restarting with stat
+2025-08-19 21:12:34,152 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-19 21:12:41,214 WARNING:  * Debugger is active!
+2025-08-19 21:12:41,252 INFO:  * Debugger PIN: 909-060-595
+2025-08-19 21:18:05,981 INFO:  * Detected change in 'D:\\kirana\\AI-for-Kirana-Stores\\backend\\routes\\search_routes.py', reloading
+2025-08-19 21:18:27,122 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-19 21:18:31,020 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:49285
+2025-08-19 21:18:31,023 INFO: [33mPress CTRL+C to quit[0m
+2025-08-19 21:18:31,030 INFO:  * Restarting with stat
+2025-08-19 21:18:43,498 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-19 21:18:47,495 WARNING:  * Debugger is active!
+2025-08-19 21:18:47,527 INFO:  * Debugger PIN: 909-060-595
+2025-08-19 21:20:04,791 INFO:  * Detected change in 'D:\\kirana\\AI-for-Kirana-Stores\\backend\\routes\\search_routes.py', reloading
+2025-08-19 21:20:06,691 INFO:  * Restarting with stat
+2025-08-19 21:24:40,417 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-19 21:24:43,659 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:49285
+2025-08-19 21:24:43,660 INFO: [33mPress CTRL+C to quit[0m
+2025-08-19 21:24:43,662 INFO:  * Restarting with stat
+2025-08-19 21:24:52,704 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-19 21:24:56,124 WARNING:  * Debugger is active!
+2025-08-19 21:24:56,143 INFO:  * Debugger PIN: 909-060-595
+2025-08-19 21:26:18,928 INFO:  * Detected change in 'D:\\kirana\\AI-for-Kirana-Stores\\backend\\routes\\search_routes.py', reloading
+2025-08-19 21:26:20,482 INFO:  * Restarting with stat
+2025-08-19 21:27:03,267 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-19 21:27:06,920 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:49285
+2025-08-19 21:27:06,923 INFO: [33mPress CTRL+C to quit[0m
+2025-08-19 21:27:06,927 INFO:  * Restarting with stat
+2025-08-19 21:27:17,455 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-19 21:27:21,790 WARNING:  * Debugger is active!
+2025-08-19 21:27:21,826 INFO:  * Debugger PIN: 909-060-595
+2025-08-19 21:35:44,813 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-19 21:35:48,088 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:49285
+2025-08-19 21:35:48,089 INFO: [33mPress CTRL+C to quit[0m
+2025-08-19 21:35:48,095 INFO:  * Restarting with stat
+2025-08-19 21:35:57,131 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-19 21:36:00,829 WARNING:  * Debugger is active!
+2025-08-19 21:36:00,880 INFO:  * Debugger PIN: 909-060-595
+2025-08-19 21:39:21,426 INFO:  * Detected change in 'D:\\kirana\\AI-for-Kirana-Stores\\backend\\routes\\search_routes.py', reloading
+2025-08-19 21:39:22,945 INFO:  * Restarting with stat
+2025-08-19 21:39:34,230 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-19 21:39:39,554 WARNING:  * Debugger is active!
+2025-08-19 21:39:39,589 INFO:  * Debugger PIN: 909-060-595
+2025-08-19 21:40:27,716 INFO:  * Detected change in 'D:\\kirana\\AI-for-Kirana-Stores\\backend\\routes\\search_routes.py', reloading
+2025-08-19 21:40:29,455 INFO:  * Restarting with stat
+2025-08-19 21:42:36,880 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-19 21:42:40,412 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:49285
+2025-08-19 21:42:40,413 INFO: [33mPress CTRL+C to quit[0m
+2025-08-19 21:42:40,415 INFO:  * Restarting with stat
+2025-08-19 21:42:49,464 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-19 21:42:52,729 WARNING:  * Debugger is active!
+2025-08-19 21:42:52,760 INFO:  * Debugger PIN: 909-060-595
+2025-08-20 08:31:06,207 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-20 08:31:10,075 INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:49285
+2025-08-20 08:31:10,075 INFO: [33mPress CTRL+C to quit[0m
+2025-08-20 08:31:10,075 INFO:  * Restarting with stat
+2025-08-20 08:31:20,479 WARNING: Using CPU. Note: This module is much faster with a GPU.
+2025-08-20 08:31:24,451 WARNING:  * Debugger is active!
+2025-08-20 08:31:24,479 INFO:  * Debugger PIN: 909-060-595
+2025-08-20 08:43:33,343 INFO:  * Detected change in 'D:\\kirana\\AI-for-Kirana-Stores\\backend\\routes\\search_routes.py', reloading
+2025-08-20 08:43:34,815 INFO:  * Restarting with stat

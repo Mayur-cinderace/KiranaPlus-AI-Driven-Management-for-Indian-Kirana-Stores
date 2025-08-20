@@ -1,3 +1,35 @@
-.env
-image.png
-.history
+# Environment files
+*.env
+
+# Images
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+
+# Editor/IDE history
+.history/
+.vscode/
+.idea/
+
+# Python cache and compiled files
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+
+# Logs
+*.log
+logs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# OS-specific files
+.DS_Store
+Thumbs.db

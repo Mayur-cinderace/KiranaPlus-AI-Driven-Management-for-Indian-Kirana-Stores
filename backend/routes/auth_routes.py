@@ -48,13 +48,15 @@ def signup():
         kirana_id = generate_unique_kirana_id(collection)
         
         # Prepare document for insertion
+        # Prepare document for insertion
         user_doc = {
             "fullName": full_name,
             "mobile": mobile,
             "role": role,
             "kiranaId": kirana_id,
             "createdAt": datetime.utcnow(),
-            "isVerified": False
+            "isVerified": False,
+            "loyalty_points": 0
         }
         
         # Add DOB if provided
