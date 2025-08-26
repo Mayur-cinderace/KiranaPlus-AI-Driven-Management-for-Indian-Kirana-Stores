@@ -4,20 +4,16 @@ import numpy as np
 import re
 import os
 import logging
-import google.generativeai as genai
 from config import Config
-from difflib import SequenceMatcher
 
 # Global OCR reader
 reader = None
 easyocr_version = None
-gemini_model = None
 
 def init_ocr():
-    """Initialize OCR and AI services"""
-    global reader, easyocr_version, gemini_model
+    """Initialize EasyOCR"""
+    global reader, easyocr_version
     
-    # Initialize EasyOCR
     try:
         print("Initializing EasyOCR (CPU mode)...")
         reader = easyocr.Reader(['en'], gpu=False)
@@ -32,49 +28,9 @@ def init_ocr():
         print(f"ERROR: Failed to initialize EasyOCR: {str(e)}")
         reader = None
 
-    # Initialize Gemini API
-    if Config.GEMINI_API_KEY:
-        try:
-            genai.configure(api_key=Config.GEMINI_API_KEY)
-            # Updated model names - try these in order
-            model_names = [
-                'gemini-1.5-flash',  # Latest and fastest
-                'gemini-1.5-pro',   # More capable
-                'models/gemini-1.5-flash',  # With models/ prefix
-                'models/gemini-1.5-pro'     # With models/ prefix
-            ]
-            
-            gemini_model = None
-            for model_name in model_names:
-                try:
-                    gemini_model = genai.GenerativeModel(model_name)
-                    # Test the model with a simple prompt
-                    test_response = gemini_model.generate_content("Test")
-                    print(f"Gemini API initialized successfully with model: {model_name}")
-                    break
-                except Exception as model_error:
-                    print(f"Failed to initialize {model_name}: {str(model_error)}")
-                    continue
-            
-            if gemini_model is None:
-                print("Failed to initialize any Gemini model. Using local fallback only.")
-            else:
-                print("Gemini API initialized for intelligent unit fallback")
-                
-        except Exception as e:
-            logging.error(f"Failed to initialize Gemini API: {str(e)}")
-            print(f"Gemini API initialization error: {str(e)}")
-            gemini_model = None
-    else:
-        print("Warning: GEMINI_API_KEY not set. Using local fallback logic only.")
-
 def get_ocr_reader():
     """Get the OCR reader instance"""
     return reader
-
-def get_gemini_model():
-    """Get the Gemini model instance"""
-    return gemini_model
 
 def allowed_file(filename):
     """Check if the file extension is allowed"""
@@ -155,63 +111,8 @@ def reconstruct_receipt_lines(ocr_results):
     return lines
 
 def get_intelligent_unit_fallback(item_name):
-    """Get intelligent unit fallback using Gemini API or local logic"""
-    # First try local intelligence (faster and free)
-    local_unit = get_local_unit_fallback(item_name)
-    
-    # Use Gemini API for more intelligent fallback
-    if gemini_model:
-        try:
-            prompt = f"""
-            For the grocery item "{item_name}", what is the most appropriate unit of measurement?
-            
-            Choose from these options only: kg, g, ltr, ml, pc, bottle, packet
-            
-            Consider:
-            - Common grocery store packaging
-            - Typical purchase quantities
-            - Standard measurement units
-            
-            Respond with only the unit abbreviation (e.g., "kg", "g", "ltr", "ml", "pc", "bottle", "packet").
-            Do not include explanations.
-            
-            Item: {item_name}
-            Unit:"""
-            
-            # Generate content with timeout and error handling
-            response = gemini_model.generate_content(
-                prompt,
-                generation_config=genai.types.GenerationConfig(
-                    temperature=0.1,  # Low temperature for consistent results
-                    top_p=0.8,
-                    top_k=40,
-                    max_output_tokens=10  # We only need a short response
-                )
-            )
-            
-            if response.text:
-                suggested_unit = response.text.strip().lower()
-                
-                # Validate the response
-                valid_units = ['kg', 'g', 'ltr', 'ml', 'pc', 'bottle', 'packet']
-                if suggested_unit in valid_units:
-                    print(f"✓ Gemini suggested unit '{suggested_unit}' for item '{item_name}'")
-                    return suggested_unit
-                else:
-                    print(f"⚠ Gemini returned invalid unit '{suggested_unit}', using local fallback '{local_unit}'")
-                    return local_unit
-            else:
-                print(f"⚠ Gemini returned empty response, using local fallback '{local_unit}'")
-                return local_unit
-                
-        except Exception as e:
-            logging.warning(f"Gemini API error for item '{item_name}': {str(e)}")
-            print(f"⚠ Gemini API error: {str(e)}, using local fallback '{local_unit}'")
-            return local_unit
-    else:
-        print(f"Applied intelligent unit fallback: '{item_name}' -> '{local_unit}'")
-    
-    return local_unit
+    """Get intelligent unit fallback using local logic"""
+    return get_local_unit_fallback(item_name)
 
 def get_local_unit_fallback(item_name):
     """Local intelligent unit fallback based on item categorization"""
@@ -221,7 +122,6 @@ def get_local_unit_fallback(item_name):
     liquid_keywords = ['oil', 'milk', 'water', 'juice', 'vinegar', 'sauce', 'syrup', 
                       'honey', 'ghee', 'coconut oil', 'mustard oil', 'olive oil']
     if any(keyword in item_lower for keyword in liquid_keywords):
-        # Large quantities in liters, small in ml
         if any(word in item_lower for word in ['bottle', 'can', 'pack', 'ltr', 'litre', 'liter']):
             return 'ltr'
         return 'ml'
@@ -260,73 +160,30 @@ def get_local_unit_fallback(item_name):
     # Default fallback
     return 'pc'
 
-def test_gemini_connection():
-    """Test Gemini API connection and available models"""
-    if not Config.GEMINI_API_KEY:
-        print("❌ No GEMINI_API_KEY found in environment")
-        return False
-    
-    try:
-        genai.configure(api_key=Config.GEMINI_API_KEY)
-        
-        # List available models
-        print("📋 Available Gemini models:")
-        for model in genai.list_models():
-            if 'generateContent' in model.supported_generation_methods:
-                print(f"  - {model.name}")
-        
-        # Test with the latest model
-        test_model = genai.GenerativeModel('gemini-1.5-flash')
-        response = test_model.generate_content("Hello, respond with just 'OK'")
-        
-        if response.text:
-            print(f"✅ Gemini API test successful: {response.text.strip()}")
-            return True
-        else:
-            print("❌ Gemini API test failed: Empty response")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Gemini API test failed: {str(e)}")
-        return False
+def levenshtein_distance(s1, s2):
+    """Compute the Levenshtein distance between two strings."""
+    if len(s1) < len(s2):
+        return levenshtein_distance(s2, s1)
+    if len(s2) == 0:
+        return len(s1)
+    previous_row = range(len(s2) + 1)
+    for i, c1 in enumerate(s1):
+        current_row = [i + 1]
+        for j, c2 in enumerate(s2):
+            insertions = previous_row[j + 1] + 1
+            deletions = current_row[j] + 1
+            substitutions = previous_row[j] + (c1 != c2)
+            current_row.append(min(insertions, deletions, substitutions))
+        previous_row = current_row
+    return previous_row[-1]
 
-def fuzzy_match_inventory_item(extracted_name, inventory_items, threshold=0.6):
-    """Find the closest matching inventory item using fuzzy string matching"""
+def fuzzy_match_inventory_item(extracted_name, inventory_items):
+    """Find the closest matching inventory item using Levenshtein distance with length penalty"""
     def clean_text(text):
         """Clean text for better matching - remove punctuation, convert to lowercase"""
         text = text.lower()
-        # Remove punctuation and extra spaces
         text = ''.join(char for char in text if char.isalnum() or char.isspace())
         return ' '.join(text.split())  # Normalize whitespace
-    
-    def calculate_similarity(str1, str2):
-        """Calculate similarity between two strings using multiple methods"""
-        clean_str1 = clean_text(str1)
-        clean_str2 = clean_text(str2)
-        
-        # Method 1: SequenceMatcher for overall similarity
-        seq_similarity = SequenceMatcher(None, clean_str1, clean_str2).ratio()
-        
-        # Method 2: Check for substring matches (partial matching)
-        substring_bonus = 0
-        if clean_str1 in clean_str2 or clean_str2 in clean_str1:
-            substring_bonus = 0.2
-        
-        # Method 3: Word-level matching for multi-word items
-        words1 = set(clean_str1.split())
-        words2 = set(clean_str2.split())
-        
-        if words1 and words2:
-            word_intersection = len(words1.intersection(words2))
-            word_union = len(words1.union(words2))
-            word_similarity = word_intersection / word_union if word_union > 0 else 0
-            
-            # Combine similarities with weights
-            combined_similarity = (seq_similarity * 0.6) + (word_similarity * 0.4) + substring_bonus
-        else:
-            combined_similarity = seq_similarity + substring_bonus
-        
-        return min(combined_similarity, 1.0)  # Cap at 1.0
     
     if not inventory_items or not extracted_name:
         return None
@@ -336,44 +193,77 @@ def fuzzy_match_inventory_item(extracted_name, inventory_items, threshold=0.6):
         return None
     
     best_match = None
-    best_score = 0
+    best_score = float('inf')  # Lower distance is better
     
-    print(f"Fuzzy matching '{extracted_name}' against {len(inventory_items)} inventory items")
+    print(f"Matching '{extracted_name}' against {len(inventory_items)} inventory items")
+    
+    # Log all candidate matches for debugging
+    candidate_matches = []
     
     for item in inventory_items:
         item_name = item.get('itemName', '')
         brand = item.get('brand', '')
         category = item.get('category', '')
         
-        # Try matching against item name
-        name_similarity = calculate_similarity(extracted_name, item_name)
+        # Clean fields for comparison
+        cleaned_item_name = clean_text(item_name)
+        cleaned_brand_name = clean_text(f"{brand} {item_name}".strip()) if brand and brand != 'NA' else ''
+        cleaned_category_name = clean_text(f"{category} {item_name}".strip()) if category else ''
         
-        # Try matching against brand + item name combination
-        brand_name_combo = f"{brand} {item_name}".strip()
-        brand_similarity = calculate_similarity(extracted_name, brand_name_combo) if brand and brand != 'NA' else 0
+        # Calculate Levenshtein distances
+        name_distance = levenshtein_distance(cleaned_extracted, cleaned_item_name)
+        brand_distance = levenshtein_distance(cleaned_extracted, cleaned_brand_name) if cleaned_brand_name else float('inf')
+        category_distance = levenshtein_distance(cleaned_extracted, cleaned_category_name) if cleaned_category_name else float('inf')
         
-        # Try matching against category + item name
-        category_combo = f"{category} {item_name}".strip()
-        category_similarity = calculate_similarity(extracted_name, category_combo) if category else 0
+        # Apply length penalty: penalize large length differences
+        length_penalty = abs(len(cleaned_extracted) - len(cleaned_item_name)) * 0.5
+        name_distance += length_penalty
         
-        # Take the best similarity score
-        max_similarity = max(name_similarity, brand_similarity, category_similarity)
+        if cleaned_brand_name:
+            brand_length_penalty = abs(len(cleaned_extracted) - len(cleaned_brand_name)) * 0.5
+            brand_distance += brand_length_penalty
+        if cleaned_category_name:
+            category_length_penalty = abs(len(cleaned_extracted) - len(cleaned_category_name)) * 0.5
+            category_distance += category_length_penalty
         
-        if max_similarity > best_score and max_similarity >= threshold:
-            best_score = max_similarity
+        # Take the minimum distance
+        min_distance = min(name_distance, brand_distance, category_distance)
+        
+        # Calculate similarity for reporting
+        max_len = max(len(cleaned_extracted), len(cleaned_item_name))
+        similarity_score = 1 - ((min_distance - length_penalty) / max_len) if max_len > 0 else 0
+        
+        # Store candidate for debugging
+        candidate_matches.append({
+            'item_name': item_name,
+            'distance': min_distance,
+            'similarity': similarity_score,
+            'matched_field': 'name' if min_distance == name_distance else \
+                           'brand_name' if min_distance == brand_distance else 'category_name'
+        })
+        
+        if min_distance < best_score:
+            best_score = min_distance
+            matched_field = 'name' if min_distance == name_distance else \
+                           'brand_name' if min_distance == brand_distance else 'category_name'
+            similarity_score = 1 - ((min_distance - length_penalty) / max_len) if max_len > 0 else 0
             best_match = {
                 'inventory_item': item,
-                'similarity_score': max_similarity,
-                'matched_field': 'name' if name_similarity == max_similarity else 
-                                'brand_name' if brand_similarity == max_similarity else 'category_name',
+                'similarity_score': similarity_score,
+                'matched_field': matched_field,
                 'extracted_name': extracted_name,
                 'matched_name': item_name
             }
-            print(f"  New best match: '{item_name}' (score: {max_similarity:.3f})")
+            print(f"  New best match: '{item_name}' (distance: {min_distance:.2f}, similarity: {similarity_score:.3f})")
     
-    if best_match:
+    # Log all candidates for debugging
+    print(f"Candidates for '{extracted_name}':")
+    for candidate in sorted(candidate_matches, key=lambda x: x['distance']):
+        print(f"  - {candidate['item_name']} (distance: {candidate['distance']:.2f}, similarity: {candidate['similarity']:.3f}, field: {candidate['matched_field']})")
+    
+    if best_match and best_match['similarity_score'] >= 0.5:  # Minimum similarity threshold
         print(f"✓ Best match for '{extracted_name}': '{best_match['matched_name']}' (score: {best_match['similarity_score']:.3f})")
+        return best_match
     else:
-        print(f"✗ No good match found for '{extracted_name}' (threshold: {threshold})")
-    
-    return best_match
+        print(f"✗ No good match found for '{extracted_name}' (best similarity: {best_match['similarity_score']:.3f})")
+        return None

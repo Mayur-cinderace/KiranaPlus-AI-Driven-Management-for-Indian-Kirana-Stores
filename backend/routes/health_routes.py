@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify
 from datetime import datetime
 from database import is_db_connected
-from ocr_service import get_ocr_reader, get_gemini_model
+from ocr_service import get_ocr_reader
 from config import Config
 
 health_bp = Blueprint('health', __name__)
@@ -17,10 +17,6 @@ def health_check():
         # Check database status
         db_status = "connected" if is_db_connected() else "disconnected"
         
-        # Check Gemini API status
-        gemini_model = get_gemini_model()
-        gemini_status = "configured" if gemini_model is not None else "not_configured"
-        
         return jsonify({
             'status': 'ok',
             'timestamp': datetime.utcnow().isoformat(),
@@ -34,9 +30,6 @@ def health_check():
                 'database': {
                     'status': db_status,
                     'mongo_uri_configured': bool(Config.MONGO_URI)
-                },
-                'gemini_api': {
-                    'status': gemini_status
                 }
             },
             'port': Config.PORT

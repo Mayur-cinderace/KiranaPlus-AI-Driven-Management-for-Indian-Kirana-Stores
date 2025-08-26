@@ -92,6 +92,18 @@ def get_bills_collection():
     except Exception as e:
         logging.error(f"Error getting bills collection: {str(e)}")
         return None
+    
+def get_receipts_collection():
+    """
+    Get the bills collection from MongoDB
+    Returns the bills collection object
+    """
+    try:
+        # Store bills in the same database as inventory for simplicity
+        return get_collection(Config.INVENTORY_DB_NAME, "receipts")
+    except Exception as e:
+        logging.error(f"Error getting bills collection: {str(e)}")
+        return None
 
 def is_db_connected():
     """Check if database is connected and active"""

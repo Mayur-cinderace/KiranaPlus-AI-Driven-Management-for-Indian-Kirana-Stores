@@ -147,15 +147,20 @@ def convert_item_for_json(item):
     if "_id" in item:
         item["_id"] = str(item["_id"])
     
-    if "expiryDate" in item and not isinstance(item["expiryDate"], str):
-        try:
-            item["expiryDate"] = parse(item["expiryDate"]).strftime("%Y-%m-%d")
-        except (ValueError, TypeError):
-            item["expiryDate"] = ""
-    if "createdAt" in item and not isinstance(item["createdAt"], str):
-        item["createdAt"] = parse(item["createdAt"]).isoformat()
-    if "updatedAt" in item and not isinstance(item["updatedAt"], str):
-        item["updatedAt"] = parse(item["updatedAt"]).isoformat()
+    if "expiryDate" in item and isinstance(item["expiryDate"], datetime):
+        item["expiryDate"] = item["expiryDate"].strftime("%Y-%m-%d")
+    elif "expiryDate" in item and not isinstance(item["expiryDate"], str):
+        item["expiryDate"] = ""  # Handle unexpected types
+    
+    if "createdAt" in item and isinstance(item["createdAt"], datetime):
+        item["createdAt"] = item["createdAt"].isoformat()
+    elif "createdAt" in item and not isinstance(item["createdAt"], str):
+        item["createdAt"] = ""  # Handle unexpected types
+    
+    if "updatedAt" in item and isinstance(item["updatedAt"], datetime):
+        item["updatedAt"] = item["updatedAt"].isoformat()
+    elif "updatedAt" in item and not isinstance(item["updatedAt"], str):
+        item["updatedAt"] = ""  # Handle unexpected types
     
     return item
 

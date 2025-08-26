@@ -21,16 +21,78 @@ def create_app():
     app.config.from_object(Config)
     
     # Configure CORS
-    CORS(app, resources={r"/api/*": {
-    "origins": [
-        "http://127.0.0.1:8000",
-        "http://localhost:8000",
-        "http://127.0.0.1:3000",
-        "http://localhost:3000"
-    ],
-    "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    "allow_headers": ["Content-Type", "Accept"]
-}})
+    CORS(app, resources={
+        r"/health": {
+            "origins": [
+                "http://127.0.0.1:8000",
+                "http://localhost:8000",
+                "http://127.0.0.1:3000",
+                "http://localhost:3000"
+            ],
+            "methods": ["GET", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Accept"]
+        },
+        r"/upload-receipt": {
+            "origins": [
+                "http://127.0.0.1:8000",
+                "http://localhost:8000",
+                "http://127.0.0.1:3000",
+                "http://localhost:3000"
+            ],
+            "methods": ["POST", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Accept"]
+        },
+        r"/save-receipt-items": {
+            "origins": [
+                "http://127.0.0.1:8000",
+                "http://localhost:8000",
+                "http://127.0.0.1:3000",
+                "http://localhost:3000"
+            ],
+            "methods": ["POST", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Accept"]
+        },
+        r"/get-all-items": {
+            "origins": [
+                "http://127.0.0.1:8000",
+                "http://localhost:8000",
+                "http://127.0.0.1:3000",
+                "http://localhost:3000"
+            ],
+            "methods": ["GET", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Accept"]
+        },
+        r"/add-item": {
+            "origins": [
+                "http://127.0.0.1:8000",
+                "http://localhost:8000",
+                "http://127.0.0.1:3000",
+                "http://localhost:3000"
+            ],
+            "methods": ["POST", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Accept"]
+        },
+        r"/generate-bill": {
+            "origins": [
+                "http://127.0.0.1:8000",
+                "http://localhost:8000",
+                "http://127.0.0.1:3000",
+                "http://localhost:3000"
+            ],
+            "methods": ["POST", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Accept"]
+        },
+        r"/api/*": {
+            "origins": [
+                "http://127.0.0.1:8000",
+                "http://localhost:8000",
+                "http://127.0.0.1:3000",
+                "http://localhost:3000"
+            ],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Accept"]
+        }
+    }, supports_credentials=False)
     
     # Configure logging
     log_dir = os.path.join(os.path.dirname(__file__), 'logs')
@@ -99,7 +161,6 @@ def create_app():
         return {"error": "Internal server error"}, 500
     
     return app
-
 
 if __name__ == "__main__":
     if os.getenv('FLASK_ENV') == 'production':

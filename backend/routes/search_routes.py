@@ -137,7 +137,8 @@ def search_products():
                 'mrp': 1,
                 'stockQuantity': 1,
                 'basePrice': 1,
-                'sellingPrice': 1
+                'sellingPrice': 1,
+                'gst': 1
             }
         ).limit(15))
         
@@ -154,7 +155,11 @@ def search_products():
                 'mrp': float(product.get('mrp', 0)),
                 'base_price': float(product.get('basePrice', 0)),
                 'selling_price': float(product.get('sellingPrice', 0)),
-                'stock_quantity': int(product.get('stockQuantity', 0))
+                'stock_quantity': int(product.get('stockQuantity', 0)),
+                'gst_rate': float(product.get('gst', 18)), # Ensure default only if missing
+                'expiry_date': product.get('expiryDate', ''),
+                'created_at': product.get('createdAt', ''),
+                'updated_at': product.get('updatedAt', '')
             }
             formatted_products.append(formatted_product)
         
@@ -282,7 +287,7 @@ def get_product_details(product_id):
             'base_price': float(product.get('basePrice', 0)),
             'selling_price': float(product.get('sellingPrice', 0)),
             'stock_quantity': int(product.get('stockQuantity', 0)),
-            'gst': float(product.get('gst', 0)),
+            'gst_rate': float(product.get('gst', 18)), # Ensure default only if missing
             'expiry_date': product.get('expiryDate', ''),
             'created_at': product.get('createdAt', ''),
             'updated_at': product.get('updatedAt', '')

@@ -4,7 +4,7 @@ from database import get_user_collection, get_retailer_collection, is_db_connect
 from utils import generate_unique_kirana_id, validate_mobile_number, validate_kirana_id
 import logging
 
-auth_bp = Blueprint('auth', __name__)
+auth_bp = Blueprint('auth', __name__, url_prefix='/api')
 
 @auth_bp.route("/signup", methods=["POST"])
 def signup():
