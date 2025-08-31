@@ -306,7 +306,7 @@
 
         <button type="submit"
           class="w-full bg-gradient-orange text-white border-none py-4 px-8 rounded-2xl text-base font-semibold cursor-pointer transition-all duration-300 mt-4 font-poppins tracking-wide hover:transform hover:-translate-y-1 active:transform active:-translate-y-0.5">Login
-          with OTP</button>
+          with K-ID</button>
       </form>
 
       <div class="text-center mt-6 text-white text-opacity-60 text-sm">
@@ -376,7 +376,7 @@
 
         <button type="submit"
           class="w-full bg-gradient-orange text-white border-none py-4 px-8 rounded-2xl text-base font-semibold cursor-pointer transition-all duration-300 mt-4 font-poppins tracking-wide hover:transform hover:-translate-y-1 active:transform active:-translate-y-0.5">Sign
-          up with OTP</button>
+          up </button>
       </form>
 
       <div class="text-center mt-6 text-white text-opacity-60 text-sm">
@@ -390,8 +390,8 @@
         <div class="text-green-400 text-xl mt-0.5">💡</div>
         <div>
           <h4 class="notification-title text-green-400 font-semibold mb-2 text-base">Getting Started Tip</h4>
-          <p class="text-white text-opacity-80 text-sm leading-6">After signing up, you'll receive an OTP to verify your
-            mobile number and complete registration.</p>
+          <p class="text-white text-opacity-80 text-sm leading-6">Sign up with your phone number to create your account.
+            You’ll instantly get your Kirana ID after registration..</p>
         </div>
       </div>
     </div>
@@ -638,7 +638,7 @@
       const setBtnLoading = (loading) => {
         if (!submitBtn) return;
         submitBtn.disabled = loading;
-        submitBtn.textContent = loading ? 'Verifying...' : 'Login with OTP';
+        submitBtn.textContent = loading ? 'Verifying...' : 'Login with K-ID';
       };
 
       try {
@@ -700,8 +700,18 @@
               window.location.href = redirectUrl;
             }, 1000);
           }
+        } else if (data.role === 'user') {
+          // For users, redirect to try_your_luck.html
+          const redirectUrl = data.redirectUrl || 'http://127.0.0.1:8000/try_your_luck.html';
+
+          // Check if we're already on the try_your_luck page
+          if (!window.location.href.includes('try_your_luck.html')) {
+            setTimeout(() => {
+              window.location.href = redirectUrl;
+            }, 1000);
+          }
         } else {
-          // For users, show inventory (assuming showInventory() is defined)
+          // For other roles, show inventory
           setTimeout(() => {
             showInventory();
           }, 1000);
@@ -737,7 +747,7 @@
       const setBtnLoading = (loading) => {
         if (!submitBtn) return;
         submitBtn.disabled = loading;
-        submitBtn.textContent = loading ? 'Creating account...' : 'Sign up with OTP';
+        submitBtn.textContent = loading ? 'Creating account...' : 'Sign up';
       };
 
       // Basic validation

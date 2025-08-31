@@ -48,7 +48,7 @@
 
         .suggestions {
             position: absolute;
-            z-index: 50;
+            z-index: 100;
             background: white;
             backdrop-filter: blur(20px);
             border: 1px solid rgba(229, 231, 235, 0.3);
@@ -180,6 +180,10 @@
                     <div id="statusIndicator" class="w-2 h-2 rounded-full bg-red-500"></div>
                     <span id="statusText" class="text-gray-600 dark:text-gray-400">Checking connection...</span>
                 </div>
+                <a href="inventory.html" id="viewInventoryBtn"
+                    class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all duration-200 text-sm font-medium">
+                    ← Back to Dashboard
+                </a>
                 <button id="inventoryBtn"
                     class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 text-sm font-medium">
                     Inventory
@@ -374,14 +378,14 @@
                         <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
                             <span class="text-sm text-gray-600 dark:text-gray-400">Loyalty Points</span>
                             <span id="loyaltyPoints" class="font-semibold text-gray-900 dark:text-white">0</span>
-                            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
-                                <span class="text-sm text-gray-600 dark:text-gray-400">Apply Points</span>
-                                <div class="flex items-center space-x-2">
-                                    <input id="applyPointsInput" type="number" min="0" value="0"
-                                        class="w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-right" />
-                                    <button id="applyPointsBtn"
-                                        class="px-3 py-1 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700">Apply</button>
-                                </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Apply Points</span>
+                            <div class="flex items-center space-x-2">
+                                <input id="applyPointsInput" type="number" min="0" value="0"
+                                    class="w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-right" />
+                                <button id="applyPointsBtn"
+                                    class="px-3 py-1 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700">Apply</button>
                             </div>
                         </div>
                         <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
@@ -447,7 +451,7 @@
 
                 <!-- Quick Stats -->
                 <div class="glassmorphism rounded-2xl p-6 animate-fade-in">
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white.mb-4">Today's Stats</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Today's Stats</h3>
                     <div class="grid grid-cols-1 gap-3 text-center">
                         <div class="p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
                             <div class="text-lg font-bold text-blue-600" id="todayBills">0</div>
@@ -529,6 +533,7 @@
         const applyPointsInput = document.getElementById('applyPointsInput');
         const applyPointsBtn = document.getElementById('applyPointsBtn');
         const loyaltyDiscountAmountEl = document.getElementById('loyaltyDiscountAmount');
+
         // Debouncing variables
         let customerSearchTimeout = null;
         let productSearchTimeout = null;
@@ -1088,7 +1093,7 @@
         </div>
     </div>
 
-    <div class="footer">
+    <div class footer">
         <div>Thank you for your business!</div>
         <div>Visit again!</div>
         <div style="margin-top: 10px;">
@@ -1418,9 +1423,11 @@
 
                     // Add click handlers
                     prodSugg.querySelectorAll('.sugg-item').forEach(item => {
-                        item.addEventListener('click', () => {
+                        item.addEventListener('click', (e) => {
+                            e.stopPropagation();
                             const productId = item.dataset.productId;
                             selectProduct(productId, products.find(p => p.id === productId));
+                            prodSugg.classList.add('hidden');
                         });
                     });
                 }
@@ -1522,11 +1529,13 @@
                     customerSugg.innerHTML = html;
                     customerSugg.classList.remove('hidden');
 
-                    // Add click handlers
+                    // Add click handlers - Fixed to prevent event propagation issues
                     customerSugg.querySelectorAll('.sugg-item').forEach(item => {
-                        item.addEventListener('click', () => {
+                        item.addEventListener('click', (e) => {
+                            e.stopPropagation();
                             const customerId = item.dataset.customerId;
                             selectCustomer(customerId, customers.find(c => c.id === customerId));
+                            customerSugg.classList.add('hidden');
                         });
                     });
                 }

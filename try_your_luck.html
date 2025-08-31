@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎲 Try Your Luck - 24 Card Grid</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .card {
+            transition: all 0.5s ease;
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-front,
+        .card-back {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            opacity: 0.7;
+        }
+
+        .jackpot {
+            animation: jackpot 0.5s ease-in-out 3;
+        }
+
+        @keyframes jackpot {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes explode {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        .bomb-animation {
+            animation: explode 0.8s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-purple-900 to-indigo-800 min-h-screen flex items-center justify-center p-4">
+    <div class="fixed top-0 left-0 w-full h-full pointer-events-none" id="confetti-container"></div>
+
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-4xl">
+        <div class="text-center mb-2">
+            <div
+                class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full shadow-lg mb-4">
+                <i class="fas fa-dice text-white text-2xl"></i>
+            </div>
+            <h1 class="text-4xl font-bold text-purple-800">Try Your Luck</h1>
+            <p class="text-purple-600 mt-2">Find the 1000 prize among 24 cards!</p>
+        </div>
+
+        <div class="bg-purple-50 p-4 rounded-lg mb-6 mt-4 border border-purple-200">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-purple-500 mt-1"></i>
+                </div>
+                <p class="text-purple-700 text-sm ml-2">
+                    <span class="font-bold">Game Rules:</span> There are 24 cards. One card has a 1000 prize, 3 cards
+                    have random prizes (1-25), and 20 cards are bombs (no reward). Each Kirana ID (6-digit number) can
+                    play only once per week. Win a prize to receive a printable voucher!
+                </p>
+            </div>
+        </div>
+
+        <form method="post" class="mb-6" id="kiranaForm">
+            <div class="mb-4">
+                <label for="kirana_id" class="block text-purple-800 text-sm font-medium mb-2">Enter Your 6-Digit Kirana
+                    ID</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-id-card text-purple-500"></i>
+                    </div>
+                    <input type="text" id="kirana_id" name="kirana_id" required
+                        class="bg-purple-50 border border-purple-300 text-purple-800 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full pl-10 p-3"
+                        placeholder="e.g., 123456" pattern="[0-9]{6}" maxlength="6"
+                        title="Please enter a 6-digit number">
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                        <i id="idValidIcon" class="hidden fas fa-check-circle text-green-500"></i>
+                    </div>
+                </div>
+                <p id="idError" class="hidden text-red-500 text-xs mt-1"><i class="fas fa-exclamation-circle mr-1"></i>
+                    Kirana ID must be exactly 6 digits</p>
+            </div>
+
+            <button type="button" onclick="validateKiranaId()"
+                class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center">
+                <i class="fas fa-play-circle mr-2"></i> Start Game
+            </button>
+        </form>
+
+        <div id="gameSection" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <div class="text-purple-800 font-medium">
+                    Kirana ID: <span id="displayKiranaId" class="font-bold">123456</span>
+                </div>
+                <div class="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded-full">
+                    <i class="fas fa-history mr-1"></i> 1/1 Attempt
+                </div>
+            </div>
+
+            <p class="text-center text-purple-700 mb-6">Click on a card to reveal your prize!</p>
+
+            <div class="grid grid-cols-4 md:grid-cols-6 gap-3 mb-6" id="cardContainer">
+                <!-- 24 cards will be generated dynamically -->
+            </div>
+
+            <div class="text-center text-sm text-purple-700">
+                <i class="fas fa-gift mr-1"></i> Find the card with 1000 to win the grand prize!
+            </div>
+        </div>
+
+        <div id="successMessage" class="hidden mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-green-800 font-medium">Congratulations!</h3>
+                    <p class="text-green-700 text-sm mt-1">You won: <span id="prizeText" class="font-bold">1000</span>
+                        points. This has been credited to your account.</p>
+                    <button onclick="generateVoucher()"
+                        class="mt-2 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center mx-auto">
+                        <i class="fas fa-ticket-alt mr-2"></i> Download Voucher
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="bombMessage" class="hidden mt-6 p-4 bg-red-50 rounded-lg border border-red-200">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-bomb text-red-500 text-xl"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-red-800 font-medium">Better Luck Next Time!</h3>
+                    <p class="text-red-700 text-sm mt-1">You selected a bomb and didn't win anything. Try again next
+                        week!</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="smallPrizeMessage" class="hidden mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-gift text-blue-500 text-xl"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-blue-800 font-medium">You Won a Prize!</h3>
+                    <p class="text-blue-700 text-sm mt-1">You won: <span id="smallPrizeText" class="font-bold">25</span>
+                        points. This has been credited to your account.</p>
+                    <button onclick="generateVoucher()"
+                        class="mt-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center mx-auto">
+                        <i class="fas fa-ticket-alt mr-2"></i> Download Voucher
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="attemptsMessage" class="hidden mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-yellow-500 text-xl"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-yellow-800 font-medium">Attempt Limit Reached</h3>
+                    <p class="text-yellow-700 text-sm mt-1">This Kirana ID has already played this week. Try again next
+                        week!</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="errorMessage" class="hidden mt-6 p-4 bg-red-50 rounded-lg border border-red-200">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-circle text-red-500 text-xl"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-red-800 font-medium" id="errorTitle">Error</h3>
+                    <p class="text-red-700 text-sm mt-1" id="errorText">Something went wrong.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPrize = 0; // Store the prize value for voucher generation
+        let voucherCode = ''; // Store the voucher code
+
+        const kiranaIdInput = document.getElementById('kirana_id');
+        const idError = document.getElementById('idError');
+        const idValidIcon = document.getElementById('idValidIcon');
+
+        // Validate Kirana ID as user types
+        kiranaIdInput.addEventListener('input', function () {
+            const kiranaId = this.value.trim();
+
+            if (kiranaId.length === 6 && /^\d+$/.test(kiranaId)) {
+                idError.classList.add('hidden');
+                idValidIcon.classList.remove('hidden');
+                this.classList.remove('border-red-300');
+                this.classList.add('border-green-300');
+            } else {
+                idValidIcon.classList.add('hidden');
+                this.classList.remove('border-green-300');
+
+                if (kiranaId.length > 0) {
+                    this.classList.add('border-red-300');
+                } else {
+                    this.classList.remove('border-red-300');
+                }
+            }
+        });
+
+        function validateKiranaId() {
+            const kiranaId = kiranaIdInput.value.trim();
+
+            if (!kiranaId) {
+                showError('Kirana ID Required', 'Please enter your Kirana ID to play.');
+                kiranaIdInput.classList.add('border-red-300');
+                return;
+            }
+
+            if (kiranaId.length !== 6 || !/^\d+$/.test(kiranaId)) {
+                showError('Invalid Kirana ID', 'Kirana ID must be exactly 6 digits.');
+                idError.classList.remove('hidden');
+                kiranaIdInput.classList.add('border-red-300');
+                return;
+            }
+
+            // Check if this ID has already played this week (simulated with localStorage)
+            const attempts = JSON.parse(localStorage.getItem('kiranaAttempts') || '{}');
+            const lastAttemptDate = attempts[kiranaId];
+            const currentDate = new Date().toDateString();
+
+            if (lastAttemptDate === currentDate) {
+                document.getElementById('attemptsMessage').classList.remove('hidden');
+                document.getElementById('kiranaForm').classList.add('hidden');
+                return;
+            }
+
+            // If valid and not attempted today, show game
+            document.getElementById('displayKiranaId').textContent = kiranaId;
+            document.getElementById('kiranaForm').classList.add('hidden');
+            document.getElementById('gameSection').classList.remove('hidden');
+
+            // Initialize the game with 24 cards
+            initializeGame();
+        }
+
+        function initializeGame() {
+            const cardContainer = document.getElementById('cardContainer');
+            cardContainer.innerHTML = '';
+
+            // Create an array for 24 cards: 1 with 1000, 3 with random (1-25), 20 bombs (0)
+            const cards = [];
+
+            // Add the 1000 prize
+            cards.push(1000);
+
+            // Add 3 random prizes between 1-25
+            for (let i = 0; i < 3; i++) {
+                cards.push(Math.floor(Math.random() * 25) + 1);
+            }
+
+            // Add 20 bombs (represented as 0)
+            for (let i = 0; i < 20; i++) {
+                cards.push(0);
+            }
+
+            // Shuffle the cards
+            shuffleArray(cards);
+
+            // Create the card elements
+            for (let i = 0; i < 24; i++) {
+                const value = cards[i];
+                const card = createCard(value, i);
+                cardContainer.appendChild(card);
+            }
+        }
+
+        function createCard(value, index) {
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'card h-20 md:h-24 cursor-pointer relative';
+            cardDiv.dataset.value = value;
+            cardDiv.dataset.index = index;
+
+            // Card front (question mark side)
+            const cardFront = document.createElement('div');
+            cardFront.className = 'card-front bg-gradient-to-br from-purple-400 to-indigo-500 rounded-lg shadow-md border-2 border-purple-300 flex items-center justify-center';
+            cardFront.innerHTML = '<span class="text-xl md:text-2xl text-white font-bold">?</span>';
+
+            // Card back (prize/bomb side)
+            const cardBack = document.createElement('div');
+
+            if (value === 0) {
+                // Bomb card
+                cardBack.className = 'card-back bg-gradient-to-br from-red-500 to-red-700 rounded-lg shadow-md border-2 border-red-400 flex items-center justify-center';
+                cardBack.innerHTML = '<i class="fas fa-bomb text-white text-xl md:text-2xl"></i>';
+            } else if (value === 1000) {
+                // 1000 prize card
+                cardBack.className = 'card-back bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg shadow-md border-2 border-yellow-300 flex items-center justify-center';
+                cardBack.innerHTML = '<span class="text-lg md:text-xl text-white font-bold">💰 1000</span>';
+            } else {
+                // Small prize card
+                cardBack.className = 'card-back bg-gradient-to-br from-green-400 to-green-600 rounded-lg shadow-md border-2 border-green-300 flex items-center justify-center';
+                cardBack.innerHTML = `<span class="text-lg md:text-xl text-white font-bold">🎁 ${value}</span>`;
+            }
+
+            cardDiv.appendChild(cardFront);
+            cardDiv.appendChild(cardBack);
+
+            // Add click event
+            cardDiv.addEventListener('click', function () {
+                revealCard(this, value);
+            });
+
+            return cardDiv;
+        }
+
+        function revealCard(card, value) {
+            // Prevent multiple clicks
+            if (card.classList.contains('flipped')) {
+                return;
+            }
+
+            // Disable all cards immediately
+            document.querySelectorAll('.card').forEach(c => {
+                c.style.pointerEvents = 'none';
+            });
+
+            // Hide all previous messages first
+            document.getElementById('successMessage').classList.add('hidden');
+            document.getElementById('bombMessage').classList.add('hidden');
+            document.getElementById('smallPrizeMessage').classList.add('hidden');
+
+            // Reveal ALL cards immediately - no delays
+            document.querySelectorAll('.card').forEach(c => {
+                c.classList.add('flipped');
+            });
+
+            // Store the prize value for voucher generation
+            currentPrize = value;
+
+            // Generate a unique voucher code for prizes
+            if (value !== 0) {
+                voucherCode = generateVoucherCode();
+            }
+
+            // Show appropriate message based on the selected value immediately
+            if (value === 0) {
+                // Bomb
+                document.getElementById('bombMessage').classList.remove('hidden');
+                createConfetti('gray');
+            } else if (value === 1000) {
+                // Grand prize
+                document.getElementById('prizeText').textContent = value;
+                document.getElementById('successMessage').classList.remove('hidden');
+                createConfetti('yellow');
+                const cardBack = card.querySelector('.card-back');
+                if (cardBack) {
+                    cardBack.classList.add('jackpot');
+                }
+            } else {
+                // Small prize
+                document.getElementById('smallPrizeText').textContent = value;
+                document.getElementById('smallPrizeMessage').classList.remove('hidden');
+                createConfetti('green');
+            }
+
+            // Record the attempt in localStorage
+            try {
+                const kiranaId = document.getElementById('kirana_id').value.trim();
+                if (kiranaId) {
+                    const attempts = JSON.parse(localStorage.getItem('kiranaAttempts') || '{}');
+                    attempts[kiranaId] = new Date().toDateString();
+                    localStorage.setItem('kiranaAttempts', JSON.stringify(attempts));
+                }
+            } catch (error) {
+                console.warn('Could not save attempt to localStorage:', error);
+            }
+        }
+
+        function generateVoucherCode() {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 8; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+
+        function generateVoucher() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const kiranaId = document.getElementById('kirana_id').value.trim();
+            const prize = currentPrize;
+            const date = new Date().toLocaleDateString();
+
+            // Set colors
+            const purple = '#800080';
+            const gold = '#FFD700';
+
+            // Background and border
+            doc.setFillColor('#F3E8FF'); // Light purple background
+            doc.roundedRect(10, 10, 190, 277, 5, 'F'); // Background rectangle
+            doc.setDrawColor(gold);
+            doc.setLineWidth(1);
+            doc.roundedRect(12, 12, 186, 273, 5, 'S'); // Gold border
+
+            // Title
+            doc.setFont('Helvetica', 'bold');
+            doc.setFontSize(24);
+            doc.setTextColor(purple);
+            doc.text('Try Your Luck Voucher', 105, 30, { align: 'center' });
+
+            // Subtitle
+            doc.setFontSize(16);
+            doc.text('Congratulations on Your Win!', 105, 45, { align: 'center' });
+
+            // Prize details
+            doc.setFontSize(20);
+            doc.text(`Prize: ${prize} Points`, 105, 80, { align: 'center' });
+            doc.setFontSize(16);
+            doc.text(`Kirana ID: ${kiranaId}`, 105, 100, { align: 'center' });
+            doc.text(`Voucher Code: ${voucherCode}`, 105, 120, { align: 'center' });
+            doc.setFontSize(12);
+            doc.text(`Issued on: ${date}`, 105, 140, { align: 'center' });
+            doc.text('Redeem at any participating store.', 105, 150, { align: 'center' });
+            doc.text('One-time use only. Non-transferable.', 105, 160, { align: 'center' });
+
+            // Footer
+            doc.setFontSize(10);
+            doc.setTextColor('#666666');
+            doc.text('This voucher is valid for 30 days from the date of issue.', 105, 270, { align: 'center' });
+
+            // Decorative elements (simple shapes instead of icons)
+            doc.setFillColor(purple);
+            doc.circle(20, 20, 3, 'F'); // Top-left gift
+            doc.circle(190, 20, 3, 'F'); // Top-right gift
+            doc.circle(20, 277, 3, 'F'); // Bottom-left gift
+            doc.circle(190, 277, 3, 'F'); // Bottom-right gift
+
+            // Save the PDF
+            doc.save(`voucher_${kiranaId}_${voucherCode}.pdf`);
+        }
+
+        function showError(title, message) {
+            document.getElementById('errorTitle').textContent = title;
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorMessage').classList.remove('hidden');
+
+            // Hide error after 5 seconds
+            setTimeout(() => {
+                document.getElementById('errorMessage').classList.add('hidden');
+            }, 5000);
+        }
+
+        // Fisher-Yates shuffle algorithm
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function createConfetti(colorType) {
+            const container = document.getElementById('confetti-container');
+            if (!container) return;
+
+            let colors;
+            switch (colorType) {
+                case 'gray':
+                    colors = ['#6B7280', '#9CA3AF', '#D1D5DB'];
+                    break;
+                case 'yellow':
+                    colors = ['#F59E0B', '#FBBF24', '#FCD34D'];
+                    break;
+                case 'green':
+                    colors = ['#10B981', '#34D399', '#6EE7B7'];
+                    break;
+                default:
+                    colors = ['#FF5757', '#FFD166', '#06D6A0', '#118AB2', '#FF9E9E', '#FDB827', '#FF6B6B', '#4ECDC4'];
+            }
+
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.position = 'absolute';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.width = (5 + Math.random() * 10) + 'px';
+                confetti.style.height = (5 + Math.random() * 10) + 'px';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                confetti.style.pointerEvents = 'none';
+
+                container.appendChild(confetti);
+
+                // Animate the confetti
+                const animation = confetti.animate([
+                    {
+                        top: '-10px',
+                        transform: 'rotate(0deg) translateX(0)',
+                        opacity: 1
+                    },
+                    {
+                        top: '100vh',
+                        transform: `rotate(${Math.random() * 360}deg) translateX(${(Math.random() - 0.5) * 200}px)`,
+                        opacity: 0
+                    }
+                ], {
+                    duration: 2000 + Math.random() * 2000,
+                    easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)'
+                });
+
+                // Remove confetti after animation completes
+                animation.addEventListener('finish', () => {
+                    if (confetti && confetti.parentNode) {
+                        confetti.parentNode.removeChild(confetti);
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>

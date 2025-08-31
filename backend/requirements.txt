@@ -2,9 +2,12 @@ flask==2.3.3
 flask-cors==4.0.0
 werkzeug==2.3.7
 pymongo==4.5.0
-easyocr==1.7.0
 opencv-python==4.8.1.78
 numpy==1.24.3
 google-generativeai==0.3.0
 python-dotenv
 python-dateutil
+paddleocr 
+paddlepaddle
+mlxtend
+prophet

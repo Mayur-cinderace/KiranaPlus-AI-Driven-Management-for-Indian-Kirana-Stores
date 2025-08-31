@@ -1,31 +1,31 @@
-import easyocr
 import cv2
 import numpy as np
 import re
 import os
 import logging
+from paddleocr import PaddleOCR
 from config import Config
+import pkg_resources
 
 # Global OCR reader
 reader = None
-easyocr_version = None
+paddleocr_version = None
 
 def init_ocr():
-    """Initialize EasyOCR"""
-    global reader, easyocr_version
+    """Initialize PaddleOCR"""
+    global reader, paddleocr_version
     
     try:
-        print("Initializing EasyOCR (CPU mode)...")
-        reader = easyocr.Reader(['en'], gpu=False)
+        print("Initializing PaddleOCR (CPU mode)...")
+        reader = PaddleOCR(use_angle_cls=True, lang='en')
         try:
-            import pkg_resources
-            easyocr_version = pkg_resources.get_distribution("easyocr").version
+            paddleocr_version = pkg_resources.get_distribution("paddleocr").version
         except:
-            easyocr_version = "unknown"
-        print(f"EasyOCR initialized successfully! Version: {easyocr_version}")
+            paddleocr_version = "unknown"
+        print(f"PaddleOCR initialized successfully! Version: {paddleocr_version}")
     except Exception as e:
-        logging.error(f"Failed to initialize EasyOCR: {str(e)}")
-        print(f"ERROR: Failed to initialize EasyOCR: {str(e)}")
+        logging.error(f"Failed to initialize PaddleOCR: {str(e)}")
+        print(f"ERROR: Failed to initialize PaddleOCR: {str(e)}")
         reader = None
 
 def get_ocr_reader():
@@ -49,22 +49,19 @@ def preprocess_image(image_path):
         # Convert to grayscale
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         
-        # Apply denoising
-        denoised = cv2.fastNlMeansDenoising(gray, h=30)
+        # Apply bilateral filter for edge-preserving denoising
+        denoised = cv2.bilateralFilter(gray, d=9, sigmaColor=75, sigmaSpace=75)
         
-        # Apply adaptive thresholding for better text contrast
-        thresh = cv2.adaptiveThreshold(
-            denoised, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-            cv2.THRESH_BINARY, 11, 2
-        )
+        # Apply Otsu's thresholding for better contrast
+        _, thresh = cv2.threshold(denoised, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         
-        # Optional: Apply morphological operations to clean up
-        kernel = np.ones((2,2), np.uint8)
-        cleaned = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-        
-        # Save processed image
-        processed_path = image_path.replace(".", "_processed.")
-        cv2.imwrite(processed_path, cleaned)
+        # Save processed image, ensuring only one '_processed' suffix
+        base, ext = os.path.splitext(image_path)
+        if base.endswith('_processed'):
+            processed_path = image_path
+        else:
+            processed_path = f"{base}_processed{ext}"
+        cv2.imwrite(processed_path, thresh)
         print(f"Preprocessed image saved to: {processed_path}")
         
         return processed_path
@@ -73,14 +70,14 @@ def preprocess_image(image_path):
         raise
 
 def reconstruct_receipt_lines(ocr_results):
-    """Reconstruct receipt lines from fragmented OCR results using bounding boxes"""
+    """Reconstruct receipt lines from OCR results using bounding boxes"""
     # Sort by y-coordinate (top to bottom), then x-coordinate (left to right)
     sorted_results = sorted(ocr_results, key=lambda x: (x[0][0][1], x[0][0][0]))
     
     lines = []
     current_line = []
     current_y = None
-    y_tolerance = 20  # pixels tolerance for same line
+    y_tolerance = 30  # Adjusted for receipt line spacing
     
     for result in sorted_results:
         bbox, text, confidence = result
@@ -110,56 +107,6 @@ def reconstruct_receipt_lines(ocr_results):
     
     return lines
 
-def get_intelligent_unit_fallback(item_name):
-    """Get intelligent unit fallback using local logic"""
-    return get_local_unit_fallback(item_name)
-
-def get_local_unit_fallback(item_name):
-    """Local intelligent unit fallback based on item categorization"""
-    item_lower = item_name.lower()
-    
-    # Liquids - typically measured in liters or ml
-    liquid_keywords = ['oil', 'milk', 'water', 'juice', 'vinegar', 'sauce', 'syrup', 
-                      'honey', 'ghee', 'coconut oil', 'mustard oil', 'olive oil']
-    if any(keyword in item_lower for keyword in liquid_keywords):
-        if any(word in item_lower for word in ['bottle', 'can', 'pack', 'ltr', 'litre', 'liter']):
-            return 'ltr'
-        return 'ml'
-    
-    # Grains, flour, sugar - typically kg
-    bulk_items = ['rice', 'wheat', 'flour', 'sugar', 'salt', 'dal', 'lentils', 
-                  'quinoa', 'oats', 'semolina', 'besan', 'atta', 'maida']
-    if any(keyword in item_lower for keyword in bulk_items):
-        return 'kg'
-    
-    # Vegetables and fruits - typically kg
-    produce_keywords = ['potato', 'onion', 'tomato', 'carrot', 'apple', 'banana', 
-                       'orange', 'mango', 'grape', 'spinach', 'cabbage', 'cauliflower',
-                       'brinjal', 'capsicum', 'beans', 'peas', 'okra', 'cucumber']
-    if any(keyword in item_lower for keyword in produce_keywords):
-        return 'kg'
-    
-    # Spices and small quantities - typically grams
-    spice_keywords = ['masala', 'powder', 'spice', 'cumin', 'coriander', 'turmeric',
-                     'chili', 'pepper', 'cardamom', 'cinnamon', 'cloves', 'garam masala']
-    if any(keyword in item_lower for keyword in spice_keywords):
-        return 'g'
-    
-    # Packaged items - typically pieces or packets
-    packaged_keywords = ['biscuit', 'chocolate', 'candy', 'chips', 'noodles', 
-                        'bread', 'cake', 'cookie', 'wafer']
-    if any(keyword in item_lower for keyword in packaged_keywords):
-        return 'packet'
-    
-    # Countable items - pieces
-    countable_keywords = ['egg', 'apple', 'orange', 'banana', 'lemon', 'coconut',
-                         'bottle', 'can', 'pack']
-    if any(keyword in item_lower for keyword in countable_keywords):
-        return 'pc'
-    
-    # Default fallback
-    return 'pc'
-
 def levenshtein_distance(s1, s2):
     """Compute the Levenshtein distance between two strings."""
     if len(s1) < len(s2):
@@ -178,7 +125,7 @@ def levenshtein_distance(s1, s2):
     return previous_row[-1]
 
 def fuzzy_match_inventory_item(extracted_name, inventory_items):
-    """Find the closest matching inventory item using Levenshtein distance with length penalty"""
+    """Find the closest matching inventory item using Levenshtein distance"""
     def clean_text(text):
         """Clean text for better matching - remove punctuation, convert to lowercase"""
         text = text.lower()
@@ -197,9 +144,6 @@ def fuzzy_match_inventory_item(extracted_name, inventory_items):
     
     print(f"Matching '{extracted_name}' against {len(inventory_items)} inventory items")
     
-    # Log all candidate matches for debugging
-    candidate_matches = []
-    
     for item in inventory_items:
         item_name = item.get('itemName', '')
         brand = item.get('brand', '')
@@ -215,7 +159,7 @@ def fuzzy_match_inventory_item(extracted_name, inventory_items):
         brand_distance = levenshtein_distance(cleaned_extracted, cleaned_brand_name) if cleaned_brand_name else float('inf')
         category_distance = levenshtein_distance(cleaned_extracted, cleaned_category_name) if cleaned_category_name else float('inf')
         
-        # Apply length penalty: penalize large length differences
+        # Apply length penalty
         length_penalty = abs(len(cleaned_extracted) - len(cleaned_item_name)) * 0.5
         name_distance += length_penalty
         
@@ -233,20 +177,10 @@ def fuzzy_match_inventory_item(extracted_name, inventory_items):
         max_len = max(len(cleaned_extracted), len(cleaned_item_name))
         similarity_score = 1 - ((min_distance - length_penalty) / max_len) if max_len > 0 else 0
         
-        # Store candidate for debugging
-        candidate_matches.append({
-            'item_name': item_name,
-            'distance': min_distance,
-            'similarity': similarity_score,
-            'matched_field': 'name' if min_distance == name_distance else \
-                           'brand_name' if min_distance == brand_distance else 'category_name'
-        })
-        
         if min_distance < best_score:
             best_score = min_distance
             matched_field = 'name' if min_distance == name_distance else \
                            'brand_name' if min_distance == brand_distance else 'category_name'
-            similarity_score = 1 - ((min_distance - length_penalty) / max_len) if max_len > 0 else 0
             best_match = {
                 'inventory_item': item,
                 'similarity_score': similarity_score,
@@ -256,14 +190,88 @@ def fuzzy_match_inventory_item(extracted_name, inventory_items):
             }
             print(f"  New best match: '{item_name}' (distance: {min_distance:.2f}, similarity: {similarity_score:.3f})")
     
-    # Log all candidates for debugging
-    print(f"Candidates for '{extracted_name}':")
-    for candidate in sorted(candidate_matches, key=lambda x: x['distance']):
-        print(f"  - {candidate['item_name']} (distance: {candidate['distance']:.2f}, similarity: {candidate['similarity']:.3f}, field: {candidate['matched_field']})")
-    
     if best_match and best_match['similarity_score'] >= 0.5:  # Minimum similarity threshold
         print(f"✓ Best match for '{extracted_name}': '{best_match['matched_name']}' (score: {best_match['similarity_score']:.3f})")
         return best_match
     else:
         print(f"✗ No good match found for '{extracted_name}' (best similarity: {best_match['similarity_score']:.3f})")
         return None
+
+def parse_ocr_results(results):
+    """Parse PaddleOCR results handling different formats"""
+    ocr_results = []
+    
+    print(f"Parsing OCR results. Type: {type(results)}")
+    
+    # Handle different PaddleOCR result formats
+    if isinstance(results, list):
+        for page_result in results:
+            if page_result is None:
+                continue
+                
+            # Handle PaddleX OCRResult objects
+            if hasattr(page_result, '__class__') and 'OCRResult' in str(type(page_result)):
+                print(f"Found OCRResult object: {type(page_result)}")
+                try:
+                    # Extract data from PaddleX OCRResult
+                    if 'dt_polys' in page_result and 'rec_texts' in page_result and 'rec_scores' in page_result:
+                        dt_polys = page_result['dt_polys']
+                        rec_texts = page_result['rec_texts']
+                        rec_scores = page_result['rec_scores']
+                        
+                        print(f"Found {len(rec_texts)} detected texts: {rec_texts}")
+                        print(f"Found {len(rec_scores)} confidence scores: {rec_scores}")
+                        print(f"Found {len(dt_polys)} bounding boxes")
+                        
+                        # Combine the data
+                        for i in range(min(len(dt_polys), len(rec_texts), len(rec_scores))):
+                            bbox = dt_polys[i]
+                            text = rec_texts[i]
+                            confidence = rec_scores[i]
+                            
+                            if text and text.strip():
+                                # Convert numpy array to list for bbox if needed
+                                if hasattr(bbox, 'tolist'):
+                                    bbox = bbox.tolist()
+                                
+                                ocr_results.append((bbox, str(text).strip(), float(confidence)))
+                                print(f"Added OCR result: '{text}' (confidence: {confidence:.3f})")
+                    else:
+                        print("Required keys not found in OCRResult")
+                        
+                except Exception as e:
+                    print(f"Error parsing OCRResult: {str(e)}")
+                    continue
+                    
+            # Handle standard list format
+            elif isinstance(page_result, list):
+                for item in page_result:
+                    try:
+                        # Handle different item formats
+                        if isinstance(item, (list, tuple)) and len(item) >= 2:
+                            if len(item) == 2:
+                                # Format: [bbox, (text, confidence)]
+                                bbox, text_conf = item
+                                if isinstance(text_conf, (list, tuple)) and len(text_conf) == 2:
+                                    text, confidence = text_conf
+                                else:
+                                    text = str(text_conf)
+                                    confidence = 1.0
+                            elif len(item) == 3:
+                                # Format: [bbox, text, confidence]
+                                bbox, text, confidence = item
+                            else:
+                                continue
+                                
+                            # Validate and add result
+                            if bbox and text and isinstance(confidence, (int, float)):
+                                ocr_results.append((bbox, str(text).strip(), float(confidence)))
+                                
+                    except Exception as e:
+                        print(f"Error parsing item {item}: {str(e)}")
+                        continue
+            else:
+                print(f"Unexpected page result type: {type(page_result)}")
+    
+    print(f"Successfully parsed {len(ocr_results)} OCR results")
+    return ocr_results

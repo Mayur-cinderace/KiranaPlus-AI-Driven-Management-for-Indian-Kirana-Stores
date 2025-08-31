@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kirana Store - Business Insights</title>
+    <link rel="icon" href="data:;base64,=">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'bounce-gentle': 'bounce-gentle 3s ease-in-out infinite',
+                        'fade-in': 'fade-in 0.8s ease-out',
+                        'slide-up': 'slide-up 0.6s ease-out',
+                        'spin-slow': 'spin 2s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'shake': 'shake 0.5s ease-in-out',
+                    },
+                    keyframes: {
+                        'bounce-gentle': {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-8px)' },
+                        },
+                        'fade-in': {
+                            '0%': { opacity: '0', transform: 'translateY(30px) scale(0.95)' },
+                            '100%': { opacity: '1', transform: 'translateY(0px) scale(1)' },
+                        },
+                        'slide-up': {
+                            '0%': { opacity: '0', transform: 'translateY(40px) scale(0.95)' },
+                            '100%': { opacity: '1', transform: 'translateY(0px) scale(1)' },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+                            '33%': { transform: 'translateY(-10px) rotate(1deg)' },
+                            '66%': { transform: 'translateY(-5px) rotate(-1deg)' },
+                        },
+                        'glow': {
+                            '0%': { 'box-shadow': '0 0 20px rgba(16, 185, 129, 0.3)' },
+                            '100%': { 'box-shadow': '0 0 30px rgba(16, 185, 129, 0.6)' },
+                        },
+                        'shake': {
+                            '0%, 100%': { transform: 'translateX(0)' },
+                            '25%': { transform: 'translateX(-5px)' },
+                            '75%': { transform: 'translateX(5px)' },
+                        }
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+    </script>
+
+    <style>
+        /* Custom styles for Hindi text formatting with proper dark mode */
+        .hindi-content {
+            line-height: 1.6;
+            text-align: left;
+            color: #374151;
+        }
+
+        .dark .hindi-content {
+            color: #e5e7eb;
+        }
+
+        .hindi-content strong {
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .dark .hindi-content strong {
+            color: #f9fafb;
+        }
+
+        .hindi-content em {
+            font-style: italic;
+            color: #4b5563;
+        }
+
+        .dark .hindi-content em {
+            color: #d1d5db;
+        }
+
+        .hindi-content u {
+            text-decoration: underline;
+            color: #374151;
+        }
+
+        .dark .hindi-content u {
+            color: #e5e7eb;
+        }
+
+        .hindi-content code {
+            background-color: #f3f4f6;
+            color: #374151;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        .dark .hindi-content code {
+            background-color: #374151;
+            color: #f9fafb;
+        }
+
+        .hindi-content ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+
+        .dark .hindi-content ul {
+            color: #e5e7eb;
+        }
+
+        .hindi-content li {
+            margin-bottom: 0.25rem;
+            color: #374151;
+        }
+
+        .dark .hindi-content li {
+            color: #e5e7eb;
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .dark .glassmorphism {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .dark .card-hover:hover {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .button-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .button-hover:hover {
+            transform: translateY(-1px);
+        }
+
+        .button-hover:active {
+            transform: translateY(0);
+        }
+
+        .button-hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .button-hover:hover::before {
+            left: 100%;
+        }
+
+        .status-dot {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .data-table th {
+            position: sticky;
+            top: 0;
+            background: rgba(249, 250, 251, 0.95);
+            backdrop-filter: blur(10px);
+            color: #111827;
+        }
+
+        .dark .data-table th {
+            background: rgba(30, 41, 59, 0.95);
+            color: #f8fafc;
+        }
+
+        .data-table td {
+            color: #374151;
+        }
+
+        .dark .data-table td {
+            color: #e5e7eb;
+        }
+
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        .dark .loading-skeleton {
+            background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+            background-size: 200% 100%;
+        }
+
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* Enhanced dark mode for explanation boxes */
+        .explanation-box {
+            background-color: #eff6ff;
+            border-color: #bfdbfe;
+            color: #1e40af;
+        }
+
+        .dark .explanation-box {
+            background-color: rgba(30, 58, 138, 0.2);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #bfdbfe;
+        }
+
+        .explanation-box-purple {
+            background-color: #faf5ff;
+            border-color: #d8b4fe;
+            color: #7c3aed;
+        }
+
+        .dark .explanation-box-purple {
+            background-color: rgba(124, 58, 237, 0.2);
+            border-color: rgba(147, 51, 234, 0.3);
+            color: #ddd6fe;
+        }
+
+        .explanation-box-green {
+            background-color: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #15803d;
+        }
+
+        .dark .explanation-box-green {
+            background-color: rgba(21, 128, 61, 0.2);
+            border-color: rgba(34, 197, 94, 0.3);
+            color: #bbf7d0;
+        }
+
+        /* Enhanced table styling for dark mode */
+        .enhanced-table {
+            background-color: white;
+        }
+
+        .dark .enhanced-table {
+            background-color: rgba(15, 23, 42, 0.6);
+        }
+
+        .enhanced-table tbody tr:hover {
+            background-color: #f9fafb;
+        }
+
+        .dark .enhanced-table tbody tr:hover {
+            background-color: rgba(51, 65, 85, 0.5);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 min-h-screen transition-all duration-500">
+    <!-- Enhanced Header -->
+    <header class="glassmorphism sticky top-0 z-50 px-6 py-4 border-b border-white/20">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-xl flex items-center justify-center text-white font-bold text-xl animate-float shadow-lg">
+                        📊
+                    </div>
+                    <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full status-dot"></div>
+                </div>
+                <div>
+                    <h1
+                        class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 dark:from-white dark:to-gray-200 bg-clip-text text-transparent">
+                        Kirana Insights
+                    </h1>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 font-medium">Business Analytics Dashboard</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div id="lastUpdated"
+                    class="text-xs text-gray-600 dark:text-gray-400 bg-white/10 dark:bg-black/20 px-3 py-2 rounded-full">
+                    Last updated: Loading...
+                </div>
+                <button id="refreshData"
+                    class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 text-sm font-medium button-hover">
+                    🔄 Refresh
+                </button>
+                <a href="inventory.html"
+                    class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all duration-200 text-sm font-medium">
+                    ← Dashboard
+                </a>
+                <button id="themeToggle"
+                    class="p-3 rounded-xl glassmorphism hover:bg-white hover:bg-opacity-20 transition-all duration-300 group">
+                    <span class="text-xl group-hover:scale-110 transition-transform duration-200">🌙</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        <!-- Top Combos Section -->
+        <div class="glassmorphism rounded-3xl p-8 animate-fade-in card-hover" id="combos-section">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center space-x-4">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <span class="text-white text-xl">🛒</span>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Top 3 Popular Combos</h2>
+                        <p class="text-gray-600 dark:text-gray-300">Most frequently purchased item combinations</p>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button id="speakCombos"
+                        class="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl button-hover">
+                        🔊 बोलें (Speak)
+                    </button>
+                    <button id="stopSpeakCombos"
+                        class="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl font-semibold hover:from-red-600 hover:to-pink-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl button-hover"
+                        disabled>
+                        🛑 रुकें (Stop)
+                    </button>
+                </div>
+            </div>
+
+            <div id="combosContent" class="space-y-6">
+                <!-- Loading skeleton -->
+                <div class="loading-skeleton h-20 rounded-xl"></div>
+                <div class="loading-skeleton h-16 rounded-xl"></div>
+                <div class="loading-skeleton h-12 rounded-xl"></div>
+            </div>
+
+            <div id="combo-explanation" class="mt-6 p-4 explanation-box border rounded-xl hindi-content">
+                Loading explanation...
+            </div>
+        </div>
+
+        <!-- Demand Forecast Section -->
+        <div class="glassmorphism rounded-3xl p-8 animate-slide-up card-hover" id="forecast-section">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center space-x-4">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <span class="text-white text-xl">📈</span>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Demand Forecast</h2>
+                        <p class="text-gray-600 dark:text-gray-300">Next 7 days demand prediction</p>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button id="speakForecast"
+                        class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-600 hover:to-pink-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl button-hover">
+                        🔊 बोलें (Speak)
+                    </button>
+                    <button id="stopSpeakForecast"
+                        class="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl font-semibold hover:from-red-600 hover:to-pink-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl button-hover"
+                        disabled>
+                        🛑 रुकें (Stop)
+                    </button>
+                </div>
+            </div>
+
+            <div id="forecastContent" class="space-y-6">
+                <!-- Loading skeleton -->
+                <div class="loading-skeleton h-20 rounded-xl"></div>
+                <div class="loading-skeleton h-16 rounded-xl"></div>
+                <div class="loading-skeleton h-12 rounded-xl"></div>
+            </div>
+
+            <div id="forecast-explanation" class="mt-6 p-4 explanation-box-purple border rounded-xl hindi-content">
+                Loading explanation...
+            </div>
+        </div>
+
+        <!-- Customer Segmentation Section -->
+        <div class="glassmorphism rounded-3xl p-8 animate-slide-up card-hover" id="segments-section">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center space-x-4">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <span class="text-white text-xl">👥</span>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Customer Segments</h2>
+                        <p class="text-gray-600 dark:text-gray-300">Customer behavior analysis</p>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button id="speakSegments"
+                        class="px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-xl font-semibold hover:from-green-600 hover:to-teal-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl button-hover">
+                        🔊 बोलें (Speak)
+                    </button>
+                    <button id="stopSpeakSegments"
+                        class="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl font-semibold hover:from-red-600 hover:to-pink-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl button-hover"
+                        disabled>
+                        🛑 रुकें (Stop)
+                    </button>
+                </div>
+            </div>
+
+            <div id="segmentsContent" class="space-y-6">
+                <!-- Loading skeleton -->
+                <div class="loading-skeleton h-20 rounded-xl"></div>
+                <div class="loading-skeleton h-16 rounded-xl"></div>
+                <div class="loading-skeleton h-12 rounded-xl"></div>
+            </div>
+
+            <div id="segments-explanation" class="mt-6 p-4 explanation-box-green border rounded-xl hindi-content">
+                Loading explanation...
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Success Toast -->
+    <div id="successToast"
+        class="fixed top-6 right-6 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-4 rounded-xl shadow-2xl transform translate-x-full transition-all duration-300 z-50 border border-white/20">
+        <div class="flex items-center space-x-3">
+            <span class="text-xl">✅</span>
+            <div>
+                <p class="font-semibold" id="successMessage">Data loaded successfully!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Error Toast -->
+    <div id="errorToast"
+        class="fixed top-6 right-6 bg-gradient-to-r from-red-500 to-pink-600 text-white px-6 py-4 rounded-xl shadow-2xl transform translate-x-full transition-all duration-300 z-50 border border-white/20">
+        <div class="flex items-center space-x-3">
+            <span class="text-xl">❌</span>
+            <div>
+                <p class="font-semibold" id="errorMessage">An error occurred!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class KiranaInsights {
+            constructor() {
+                this.isDarkMode = false;
+                this.backendUrl = 'http://127.0.0.1:49285';
+                this.voices = [];
+                this.data = {
+                    combos: [],
+                    forecasts: [],
+                    segments: [],
+                    explanations: {}
+                };
+                this.initializeEventListeners();
+                this.loadVoices();
+                this.loadData();
+            }
+
+            initializeEventListeners() {
+                document.getElementById('themeToggle').addEventListener('click', () => this.toggleTheme());
+                document.getElementById('refreshData').addEventListener('click', () => this.loadData(true));
+                document.getElementById('speakCombos').addEventListener('click', () => this.speakContent('combos'));
+                document.getElementById('speakForecast').addEventListener('click', () => this.speakContent('forecast'));
+                document.getElementById('speakSegments').addEventListener('click', () => this.speakContent('segments'));
+                document.getElementById('stopSpeakCombos').addEventListener('click', () => this.stopSpeaking('combos'));
+                document.getElementById('stopSpeakForecast').addEventListener('click', () => this.stopSpeaking('forecast'));
+                document.getElementById('stopSpeakSegments').addEventListener('click', () => this.stopSpeaking('segments'));
+                // Set up voice loading
+                window.speechSynthesis.onvoiceschanged = () => this.loadVoices();
+            }
+
+            loadVoices() {
+                this.voices = window.speechSynthesis.getVoices();
+                console.log('Available voices:', this.voices.map(v => `${v.name} (${v.lang})`));
+            }
+
+            stripHtml(html) {
+                const div = document.createElement('div');
+                div.innerHTML = html;
+                return div.textContent || div.innerText || '';
+            }
+
+            stopSpeaking(type) {
+                const speakButton = document.getElementById(`speak${type.charAt(0).toUpperCase() + type.slice(1)}`);
+                // Stop any ongoing speech
+                window.speechSynthesis.cancel();
+                // Reset the speak button to its original state
+                speakButton.innerHTML = '🔊 बोलें (Speak)';
+                speakButton.disabled = false;
+            }
+
+            toggleTheme() {
+                this.isDarkMode = !this.isDarkMode;
+                const html = document.documentElement;
+                const toggle = document.getElementById('themeToggle');
+
+                if (this.isDarkMode) {
+                    html.classList.add('dark');
+                    toggle.innerHTML = '<span class="text-xl group-hover:scale-110 transition-transform duration-200">☀️</span>';
+                } else {
+                    html.classList.remove('dark');
+                    toggle.innerHTML = '<span class="text-xl group-hover:scale-110 transition-transform duration-200">🌙</span>';
+                }
+            }
+
+            async loadData(force = false) {
+                const refreshButton = document.getElementById('refreshData');
+                const originalText = refreshButton.innerHTML;
+
+                refreshButton.innerHTML = '<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>Loading...';
+                refreshButton.disabled = true;
+
+                try {
+                    const response = await fetch(`${this.backendUrl}/insights${force ? '?force=true' : ''}`);
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.error || 'Failed to load data');
+                    }
+
+                    this.data = result;
+                    this.renderAllSections();
+                    this.updateLastUpdated();
+                    this.showToast('success', 'Data refreshed successfully!');
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    this.showToast('error', error.message || 'Failed to load insights data');
+                    this.renderErrorState();
+                } finally {
+                    refreshButton.innerHTML = originalText;
+                    refreshButton.disabled = false;
+                }
+            }
+
+            renderAllSections() {
+                this.renderCombos();
+                this.renderForecast();
+                this.renderSegments();
+            }
+
+            renderCombos() {
+                const content = document.getElementById('combosContent');
+                const explanation = document.getElementById('combo-explanation');
+
+                if (!this.data.combos || this.data.combos.length === 0 || this.data.combos[0].combo === "No combos found") {
+                    content.innerHTML = `
+                        <div class="text-center py-12">
+                            <div class="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span class="text-3xl">📦</span>
+                            </div>
+                            <p class="text-xl font-semibold text-gray-600 dark:text-gray-300">No combos found</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Start with more transaction data to see popular combinations</p>
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="overflow-x-auto">
+                            <table class="data-table enhanced-table w-full rounded-xl overflow-hidden">
+                                <thead>
+                                    <tr class="text-left">
+                                        <th class="px-6 py-4 font-semibold border-b border-gray-200 dark:border-gray-600">Combo</th>
+                                        <th class="px-6 py-4 font-semibold border-b border-gray-200 dark:border-gray-600">Purchased Together</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                                    ${this.data.combos.map((combo, index) => `
+                                        <tr class="transition-colors duration-200">
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                                                        ${index + 1}
+                                                    </div>
+                                                    <span class="font-medium">${combo.combo}</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                    ${combo.count} times
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+
+                explanation.innerHTML = this.data.explanations?.hindi_combo_explanation || 'Explanation loading...';
+            }
+
+            renderForecast() {
+                const content = document.getElementById('forecastContent');
+                const explanation = document.getElementById('forecast-explanation');
+
+                if (!this.data.forecasts || this.data.forecasts.length === 0) {
+                    content.innerHTML = `
+                        <div class="text-center py-12">
+                            <div class="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span class="text-3xl">📈</span>
+                            </div>
+                            <p class="text-xl font-semibold text-gray-600 dark:text-gray-300">No forecast data available</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">More transaction history needed for accurate predictions</p>
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="overflow-x-auto">
+                            <table class="data-table enhanced-table w-full rounded-xl overflow-hidden">
+                                <thead>
+                                    <tr class="text-left">
+                                        <th class="px-6 py-4 font-semibold border-b border-gray-200 dark:border-gray-600">Item Name</th>
+                                        <th class="px-6 py-4 font-semibold border-b border-gray-200 dark:border-gray-600">Predicted Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                                    ${this.data.forecasts.map((forecast, index) => `
+                                        <tr class="transition-colors duration-200">
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                                                        ${index + 1}
+                                                    </div>
+                                                    <span class="font-medium">${forecast.item_name}</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                                    ${forecast.predicted_quantity}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+
+                explanation.innerHTML = this.data.explanations?.hindi_forecast_explanation || 'Explanation loading...';
+            }
+
+            renderSegments() {
+                const content = document.getElementById('segmentsContent');
+                const explanation = document.getElementById('segments-explanation');
+
+                if (!this.data.segments || this.data.segments.length === 0) {
+                    content.innerHTML = `
+                        <div class="text-center py-12">
+                            <div class="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span class="text-3xl">👥</span>
+                            </div>
+                            <p class="text-xl font-semibold text-gray-600 dark:text-gray-300">No customer segments available</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Customer data needed for segmentation analysis</p>
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="overflow-x-auto">
+                            <table class="data-table enhanced-table w-full rounded-xl overflow-hidden">
+                                <thead>
+                                    <tr class="text-left">
+                                        <th class="px-6 py-4 font-semibold border-b border-gray-200 dark:border-gray-600">Segment Name</th>
+                                        <th class="px-6 py-4 font-semibold border-b border-gray-200 dark:border-gray-600">Customer Count</th>
+                                        <th class="px-6 py-4 font-semibold border-b border-gray-200 dark:border-gray-600">Avg. Purchases</th>
+                                        <th class="px-6 py-4 font-semibold border-b border-gray-200 dark:border-gray-600">Avg. Spend ($)</th>
+                                        <th class="px-6 py-4 font-semibold border-b border-gray-200 dark:border-gray-600">Top Item</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                                    ${this.data.segments.map((segment, index) => `
+                                        <tr class="transition-colors duration-200">
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-teal-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                                                        ${index + 1}
+                                                    </div>
+                                                    <span class="font-medium">${segment.name}</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                    ${segment.count}
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <span class="font-medium">${segment.avg_purchase_count}</span>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <span class="font-medium">${segment.avg_spend}</span>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                                    ${segment.common_item}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+
+                explanation.innerHTML = this.data.explanations?.hindi_segment_explanation || 'Explanation loading...';
+            }
+
+            renderErrorState() {
+                const sections = ['combosContent', 'forecastContent', 'segmentsContent'];
+                sections.forEach(sectionId => {
+                    const section = document.getElementById(sectionId);
+                    section.innerHTML = `
+                        <div class="text-center py-12">
+                            <div class="w-20 h-20 bg-red-200 dark:bg-red-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span class="text-3xl">⚠️</span>
+                            </div>
+                            <p class="text-xl font-semibold text-red-600 dark:text-red-400">Failed to load data</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Please check backend connection and try again</p>
+                        </div>
+                    `;
+                });
+            }
+
+            updateLastUpdated() {
+                const lastUpdated = document.getElementById('lastUpdated');
+                const now = new Date();
+                lastUpdated.textContent = `Last updated: ${now.toLocaleTimeString()}`;
+            }
+
+            speakContent(type) {
+                const button = document.getElementById(`speak${type.charAt(0).toUpperCase() + type.slice(1)}`);
+                const stopButton = document.getElementById(`stopSpeak${type.charAt(0).toUpperCase() + type.slice(1)}`);
+                const originalText = button.innerHTML;
+
+                // Stop any ongoing speech
+                window.speechSynthesis.cancel();
+
+                let text = '';
+
+                switch (type) {
+                    case 'combos':
+                        text = this.buildComboText();
+                        break;
+                    case 'forecast':
+                        text = this.buildForecastText();
+                        break;
+                    case 'segments':
+                        text = this.buildSegmentsText();
+                        break;
+                }
+
+                if (!text) {
+                    this.showToast('error', 'No content available to speak');
+                    return;
+                }
+
+                button.innerHTML = '<span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>बोल रहा है...';
+                button.disabled = true;
+                stopButton.disabled = false; // Enable stop button when speaking starts
+
+                const utterance = new SpeechSynthesisUtterance(text);
+
+                // Try to find Hindi voice
+                const hindiVoices = this.voices.filter(voice =>
+                    voice.lang.includes('hi') ||
+                    voice.lang.includes('HI') ||
+                    voice.name.toLowerCase().includes('hindi')
+                );
+
+                if (hindiVoices.length > 0) {
+                    utterance.voice = hindiVoices[0];
+                    utterance.lang = 'hi-IN';
+                } else {
+                    utterance.lang = 'hi-IN';
+                }
+
+                utterance.rate = 0.8;
+                utterance.pitch = 1;
+                utterance.volume = 1;
+
+                utterance.onend = () => {
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                    stopButton.disabled = true; // Disable stop button when speech ends
+                };
+
+                utterance.onerror = (event) => {
+                    console.error('Speech synthesis error:', event.error);
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                    stopButton.disabled = true; // Disable stop button on error
+                    this.showToast('error', 'Speech synthesis failed');
+                };
+
+                window.speechSynthesis.speak(utterance);
+            }
+
+            buildComboText() {
+                if (!this.data.combos || this.data.combos.length === 0 || this.data.combos[0].combo === "No combos found") {
+                    return this.data.explanations?.hindi_combo_explanation || '';
+                }
+
+                let text = 'शीर्ष 3 लोकप्रिय कॉम्बो: ';
+                this.data.combos.forEach((combo, index) => {
+                    text += `${index + 1}. ${combo.combo} ${combo.count} बार। `;
+                });
+                text += this.stripHtml(this.data.explanations?.hindi_combo_explanation || '');
+                return text;
+            }
+
+            buildForecastText() {
+                if (!this.data.forecasts || this.data.forecasts.length === 0) {
+                    return this.data.explanations?.hindi_forecast_explanation || '';
+                }
+
+                let text = 'अगले 7 दिनों की मांग पूर्वानुमान: ';
+                this.data.forecasts.forEach((forecast, index) => {
+                    text += `${index + 1}. ${forecast.item_name} - अनुमानित मात्रा ${forecast.predicted_quantity}। `;
+                });
+                text += this.stripHtml(this.data.explanations?.hindi_forecast_explanation || '');
+                return text;
+            }
+
+            buildSegmentsText() {
+                if (!this.data.segments || this.data.segments.length === 0) {
+                    return this.data.explanations?.hindi_segment_explanation || '';
+                }
+
+                let text = 'ग्राहक खंड: ';
+                this.data.segments.forEach((segment, index) => {
+                    text += `${index + 1}. ${segment.name} - ${segment.count} ग्राहक, औसत खरीदारी ${segment.avg_purchase_count}, औसत खर्च ${segment.avg_spend}, शीर्ष आइटम ${segment.common_item}। `;
+                });
+                text += this.stripHtml(this.data.explanations?.hindi_segment_explanation || '');
+                return text;
+            }
+
+            showToast(type, message) {
+                const toast = document.getElementById(type + 'Toast');
+                const messageElement = document.getElementById(type + 'Message');
+
+                messageElement.textContent = message;
+                toast.style.transform = 'translateX(0)';
+                toast.classList.add('animate-fade-in');
+
+                setTimeout(() => {
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => toast.classList.remove('animate-fade-in'), 300);
+                }, 5000);
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            const insights = new KiranaInsights();
+        });
+    </script>
+</body>
+
+</html>

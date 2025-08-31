@@ -34,6 +34,18 @@ def get_db_client():
     """Get the database client"""
     return client
 
+def get_db():
+    """
+    Get the main database for insights and analytics
+    This function is required by the insights module
+    """
+    if client is None:
+        logging.error("Database client is None")
+        raise Exception("Database not connected")
+    
+    # Return the inventory database which contains bills and items
+    return client[Config.INVENTORY_DB_NAME]
+
 def get_collection(db_name, collection_name):
     """Get a specific collection"""
     if client is None:
@@ -95,14 +107,14 @@ def get_bills_collection():
     
 def get_receipts_collection():
     """
-    Get the bills collection from MongoDB
-    Returns the bills collection object
+    Get the receipts collection from MongoDB
+    Returns the receipts collection object
     """
     try:
-        # Store bills in the same database as inventory for simplicity
+        # Store receipts in the same database as inventory for simplicity
         return get_collection(Config.INVENTORY_DB_NAME, "receipts")
     except Exception as e:
-        logging.error(f"Error getting bills collection: {str(e)}")
+        logging.error(f"Error getting receipts collection: {str(e)}")
         return None
 
 def is_db_connected():
@@ -114,6 +126,17 @@ def is_db_connected():
         return True
     except Exception:
         return False
+
+def close_db_connection():
+    """Close the database connection"""
+    global client
+    if client is not None:
+        try:
+            client.close()
+            client = None
+            logging.info("Database connection closed")
+        except Exception as e:
+            logging.error(f"Error closing database connection: {e}")
 
 # Debug function (remove in production)
 def debug_database_status():
@@ -136,6 +159,11 @@ def debug_database_status():
             # Test getting bills collection
             bills_collection = get_bills_collection()
             print(f"Bills collection type: {type(bills_collection)}")
+            
+            # Test the get_db function
+            main_db = get_db()
+            print(f"Main database type: {type(main_db)}")
+            print(f"Main database collections: {main_db.list_collection_names()}")
             
         except Exception as e:
             print(f"Error during debug: {e}")
