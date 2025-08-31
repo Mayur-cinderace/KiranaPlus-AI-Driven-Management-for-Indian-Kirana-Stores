@@ -39,6 +39,8 @@
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 10;
+            /* Add this if not present, to keep it below the suggestions */
         }
 
         .dark .glassmorphism {
@@ -46,9 +48,16 @@
             border: 1px solid rgba(148, 163, 184, 0.2);
         }
 
+        .relative {
+            position: relative;
+            z-index: 1000;
+            /* Match or exceed the suggestions z-index to avoid clipping */
+        }
+
         .suggestions {
             position: absolute;
-            z-index: 100;
+            z-index: 1000;
+            /* Ensure it’s above all other elements */
             background: white;
             backdrop-filter: blur(20px);
             border: 1px solid rgba(229, 231, 235, 0.3);
@@ -57,6 +66,9 @@
             overflow: auto;
             width: 100%;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            top: calc(100% + 4px);
+            /* Add a small margin below the input */
+            left: 0;
         }
 
         .dark .suggestions {
@@ -1554,6 +1566,8 @@
             // Update customer info display
             if (custInfo) custInfo.textContent = `Selected: ${selectedCustomer.name} (${selectedCustomer.phone})`;
 
+            // Set the customer search input value to the selected customer's name
+            if (customerSearch) customerSearch.value = `${selectedCustomer.name} (${selectedCustomer.phone})`;
             // Update BillManager customer
             billManager.setCustomer(customerId, customerData);
 
