@@ -1,3 +1,4 @@
+# routes/health_routes.py
 from flask import Blueprint, jsonify
 from datetime import datetime
 from database import is_db_connected
@@ -10,13 +11,9 @@ health_bp = Blueprint('health', __name__)
 def health_check():
     """Comprehensive health check endpoint"""
     try:
-        # Check OCR status
         ocr_reader = get_ocr_reader()
         ocr_status = "initialized" if ocr_reader is not None else "failed"
-        
-        # Check database status
         db_status = "connected" if is_db_connected() else "disconnected"
-        
         return jsonify({
             'status': 'ok',
             'timestamp': datetime.utcnow().isoformat(),

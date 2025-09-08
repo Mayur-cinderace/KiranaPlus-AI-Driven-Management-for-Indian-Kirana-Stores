@@ -101,7 +101,11 @@
           class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 text-sm font-medium">
           View Inventory
         </a>
-
+        <!-- Insights Button -->
+        <a href="insights.html" id="insightsBtn"
+          class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 text-sm font-medium">
+          Business Insights
+        </a>
         <!-- Billing Button -->
         <a href="billing.html" id="billing"
           class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 text-sm font-medium">
@@ -113,11 +117,34 @@
           List Upload
         </a>
 
-        <!-- Theme Toggle (Dark/Light Mode) -->
-        <button id="themeToggle"
-          class="p-2 rounded-lg glassmorphism hover:bg-white hover:bg-opacity-20 transition-all duration-200">
-          <span class="text-lg">🌙</span>
-        </button>
+        <!-- Settings Section -->
+
+        <div class="relative inline-block text-left">
+          <!-- Settings Button -->
+          <button id="settingsBtn"
+            class="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg shadow-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200">
+            ⚙️ <span class="text-sm font-medium">Settings</span>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div id="settingsMenu"
+            class="hidden absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+            <div class="p-2 flex flex-col gap-2">
+              <!-- Logout Button -->
+              <a href="index.html" id="logout"
+                class="block w-full text-center px-4 py-2 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 hover:shadow-lg transition-all duration-200 text-sm font-medium">
+                Logout
+              </a>
+
+              <!-- Theme Toggle -->
+              <button id="themeToggle"
+                class="flex items-center justify-center px-3 py-2 rounded-lg bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-500 transition-all duration-200">
+                🌙 <span class="ml-2 text-sm"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </header>
@@ -391,20 +418,21 @@
         }
 
         const GST_RATES = {
-          'fresh-produce': { unpackaged: 0, packaged: 0 },
-          'grains-staples': { unpackaged: 0, packaged: 5 },
-          'pulses-lentils': { unpackaged: 0, packaged: 5 },
-          'spices': { unpackaged: 0, packaged: 5 },
-          'dairy': { unpackaged: 0, packaged: 5 },
-          'beverages': { unpackaged: 0, packaged: 5 },
-          'oils-fats': { unpackaged: 0, packaged: 5 },
-          'instant-foods': { unpackaged: 12, packaged: 12 },
-          'snacks': { unpackaged: 18, packaged: 18 },
-          'sweets-chocolates': { unpackaged: 18, packaged: 18 },
-          'bakery-breakfast': { unpackaged: 18, packaged: 18 },
-          'household-items': { unpackaged: 18, packaged: 18 },
-          'personal-care': { unpackaged: 18, packaged: 18 },
+          'fresh-produce': { unpackaged: 0, packaged: 0 },          // Essentials (milk, roti, veggies) → 0%
+          'grains-staples': { unpackaged: 0, packaged: 5 },         // Packaged cereals/pasta → 5%
+          'pulses-lentils': { unpackaged: 0, packaged: 5 },         // Packaged dal → 5%
+          'spices': { unpackaged: 0, packaged: 5 },                 // Packaged masalas → 5%
+          'dairy': { unpackaged: 0, packaged: 5 },                  // Milk, paneer → 0%; butter, cheese → 5%
+          'beverages': { unpackaged: 0, packaged: 40 },             // Aerated/caffeinated drinks → 40%
+          'oils-fats': { unpackaged: 0, packaged: 5 },              // Edible oils, ghee → 5%
+          'instant-foods': { unpackaged: 18, packaged: 18 },        // Instant noodles, pasta, soups → 18%
+          'snacks': { unpackaged: 5, packaged: 5 },                 // Chips, namkeen, biscuits → 5%
+          'sweets-chocolates': { unpackaged: 18, packaged: 18 },    // Chocolates, confectionery → 18%
+          'bakery-breakfast': { unpackaged: 5, packaged: 5 },       // Bread, khakhra, cornflakes → 5%
+          'household-items': { unpackaged: 5, packaged: 5 },        // Soaps, detergents, kitchenware → 5%
+          'personal-care': { unpackaged: 5, packaged: 5 },          // Shampoo, toothpaste, cosmetics → 5%
         };
+
 
         // If brand is empty or "NA", treat as unpackaged
         const isUnpackaged = !brand || brand.toUpperCase() === 'NA';
@@ -469,7 +497,7 @@
           }
 
           // Send to Flask backend
-          const response = await fetch('http://127.0.0.1:49285/add-item', {
+          const response = await fetch('http://127.0.0.1:49285/api/add-item', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -629,10 +657,24 @@
           toggle.innerHTML = '<span class="text-lg">🌙</span>';
         }
       }
+
+
     }
+
 
     // Initialize the application
     const inventoryManager = new KiranaInventoryManager();
+  </script>
+  <script>
+    // Toggle dropdown menu
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('settingsBtn').addEventListener('click', () => {
+        console.log('Settings button clicked'); // Debug log
+        const settingsMenu = document.getElementById('settingsMenu');
+        settingsMenu.classList.toggle('hidden');
+        console.log('Settings menu hidden:', settingsMenu.classList.contains('hidden')); // Debug log
+      });
+    }); 
   </script>
 </body>
 

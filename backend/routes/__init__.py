@@ -1,23 +1,16 @@
-from flask import Blueprint, jsonify
+# __init__.py
 from datetime import datetime
 from database import is_db_connected
 from ocr_service import get_ocr_reader
 from config import Config
 
-health_bp = Blueprint('health', __name__, url_prefix='/api')
-
-@health_bp.route('/health', methods=['GET'])
+# Move this to a utility function if needed, but don’t create a blueprint here
 def health_check():
-    """Comprehensive health check endpoint"""
     try:
-        # Check OCR status
         ocr_reader = get_ocr_reader()
         ocr_status = "initialized" if ocr_reader is not None else "failed"
-        
-        # Check database status
         db_status = "connected" if is_db_connected() else "disconnected"
-        
-        return jsonify({
+        return {
             'status': 'ok',
             'timestamp': datetime.utcnow().isoformat(),
             'service': 'Combined Kirana API Server',
@@ -33,6 +26,6 @@ def health_check():
                 }
             },
             'port': Config.PORT
-        }), 200
+        }, 200
     except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+        return {'status': 'error', 'message': str(e)}, 500

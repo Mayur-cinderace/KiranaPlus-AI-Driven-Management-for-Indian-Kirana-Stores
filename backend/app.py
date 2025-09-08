@@ -9,19 +9,15 @@ from routes.auth_routes import auth_bp
 from routes.inventory_routes import inventory_bp
 from routes.search_routes import search_bp
 from routes.bill_routes import bill_bp
-from routes.insights_routes import insights_bp  # Import the insights blueprint
+from routes.insights_routes import insights_bp
 import logging
 import os
 from logging.handlers import RotatingFileHandler
 
 def create_app():
-    """Application factory pattern"""
     app = Flask(__name__)
-    
-    # Load configuration
     app.config.from_object(Config)
     
-    # Simplified CORS configuration - more secure and manageable
     CORS(app, resources={
         r"/health": {
             "origins": [
@@ -117,21 +113,15 @@ def create_app():
     handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
     logging.basicConfig(
         level=logging.INFO,
-        handlers=[
-            handler,
-            logging.StreamHandler()
-        ]
+        handlers=[handler, logging.StreamHandler()]
     )
     
-    # Create uploads directory if it doesn't exist
     os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
     
-    # Initialize database connection
     if not init_db():
         logging.error("Failed to initialize database")
         raise RuntimeError("Database initialization failed")
     
-    # Initialize OCR service
     try:
         init_ocr()
     except Exception as e:
@@ -139,18 +129,14 @@ def create_app():
         raise RuntimeError("OCR initialization failed")
     
     # Register blueprints
-    try:
-        app.register_blueprint(health_bp)
-        app.register_blueprint(ocr_bp)
-        app.register_blueprint(auth_bp)
-        app.register_blueprint(inventory_bp)
-        app.register_blueprint(search_bp)
-        app.register_blueprint(bill_bp)
-        app.register_blueprint(insights_bp)  # Register the insights blueprint
-        logging.info("All blueprints registered successfully")
-    except Exception as e:
-        logging.error(f"Failed to register blueprint: {str(e)}")
-        raise
+    app.register_blueprint(health_bp)  # No url_prefix needed for /health
+    app.register_blueprint(ocr_bp)
+    app.register_blueprint(auth_bp, url_prefix='/api')
+    app.register_blueprint(inventory_bp, url_prefix='/api')
+    app.register_blueprint(search_bp, url_prefix='/api')
+    app.register_blueprint(bill_bp, url_prefix='/api')
+    app.register_blueprint(insights_bp, url_prefix='/api')
+    logging.info("All blueprints registered successfully")
     
     # Error handlers
     @app.errorhandler(400)
@@ -178,7 +164,6 @@ def create_app():
         logging.error(f"Internal server error: {str(error)}")
         return {"error": "Internal server error"}, 500
     
-    # Add a root endpoint for API discovery
     @app.route('/')
     def root():
         return {
@@ -186,10 +171,10 @@ def create_app():
             "version": "1.0",
             "endpoints": {
                 "health": "/health",
-                "insights": "/insights",
-                "upload_receipt": "/upload-receipt",
-                "inventory": "/get-all-items",
-                "billing": "/generate-bill"
+                "insights": "/api/insights",
+                "upload_receipt": "/api/upload-receipt",
+                "inventory": "/api/get-all-items",
+                "billing": "/api/generate-bill"
             }
         }
     
@@ -202,8 +187,8 @@ if __name__ == "__main__":
     print("🚀 Starting Combined Kirana API Server...")
     print(f"📡 Server will be available at: http://localhost:{Config.PORT}")
     print(f"🔗 Health check: http://localhost:{Config.PORT}/health")
-    print(f"📊 Insights endpoint: http://localhost:{Config.PORT}/insights")
-    print(f"📊 Combo insights: http://localhost:{Config.PORT}/insights/combos")
-    print(f"📊 Forecast insights: http://localhost:{Config.PORT}/insights/forecast")
-    print(f"📊 Segments insights: http://localhost:{Config.PORT}/insights/segments")
-    app.run(port=Config.PORT, debug=Config.DEBUG)
+    print(f"📊 Insights endpoint: http://localhost:{Config.PORT}/api/insights")
+    print(f"📊 Combo insights: http://localhost:{Config.PORT}/api/insights/combos")
+    print(f"📊 Forecast insights: http://localhost:{Config.PORT}/api/insights/forecast")
+    print(f"📊 Segments insights: http://localhost:{Config.PORT}/api/insights/segments")
+    app.run(port=Config.PORT, debug=Config.DEBUG)    

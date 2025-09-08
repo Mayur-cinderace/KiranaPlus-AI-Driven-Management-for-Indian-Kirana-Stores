@@ -104,7 +104,7 @@
       filter: invert(0);
     }
 
-    /* FIXED: Custom dropdown arrow for select elements */
+    /* Custom dropdown arrow for select elements */
     .select-wrapper {
       position: relative;
     }
@@ -125,7 +125,7 @@
       color: rgba(0, 0, 0, 0.6);
     }
 
-    /* FIXED: Select element styling for dark theme */
+    /* Select element styling for dark theme */
     select.input-dark {
       background-image: none;
       padding-right: 45px;
@@ -137,7 +137,7 @@
       padding: 8px 12px;
     }
 
-    /* FIXED: Select element styling for light theme */
+    /* Select element styling for light theme */
     select.input-light {
       background-image: none;
       padding-right: 45px;
@@ -164,7 +164,7 @@
       color: #1a1a1a !important;
     }
 
-    /* FIXED: Added light theme text colors */
+    /* Light theme text colors */
     .light .text-white {
       color: #1a1a1a !important;
     }
@@ -182,7 +182,7 @@
       color: #1a1a1a !important;
     }
 
-    /* FIXED: Light theme form styling */
+    /* Light theme form styling */
     .light .form-container {
       background-color: rgba(255, 255, 255, 0.95) !important;
       border-color: rgba(0, 0, 0, 0.1) !important;
@@ -210,13 +210,123 @@
       color: #047857 !important;
     }
 
-    /* FIXED: Placeholder text styling */
+    /* Placeholder text styling */
     .input-dark::placeholder {
       color: rgba(255, 255, 255, 0.4) !important;
     }
 
     .input-light::placeholder {
       color: rgba(0, 0, 0, 0.4) !important;
+    }
+
+    /* About page card styling - FIXED */
+    .team-card {
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+
+    .team-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .team-avatar {
+      width: 80px;
+      height: 80px;
+      background-color: #4a5568;
+      border-radius: 50%;
+      margin: 0 auto 15px;
+    }
+
+    .team-link {
+      color: #28a745;
+      text-decoration: none;
+      margin: 0 10px;
+      transition: color 0.3s ease;
+    }
+
+    .team-link:hover {
+      color: #34d399;
+    }
+
+    /* Dark theme team card styling */
+    .team-card {
+      background-color: rgba(0, 0, 0, 0.4);
+      box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
+    }
+
+    .team-name {
+      color: #ffffff;
+    }
+
+    .team-role {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Light theme team card styling */
+    .light .team-card {
+      background-color: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .light .team-name {
+      color: #1a1a1a !important;
+    }
+
+    .light .team-role {
+      color: rgba(26, 26, 26, 0.6) !important;
+    }
+
+    .light .team-link {
+      color: #28a745;
+    }
+
+    .light .team-link:hover {
+      color: #34d399;
+    }
+
+    /* Popup styles */
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.85);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      color: white;
+      text-align: center;
+    }
+
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+
+    .popup-btn {
+      margin-top: 15px;
+      padding: 8px 16px;
+      background-color: #28a745;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .popup-btn:hover {
+      background-color: #34d399;
     }
   </style>
 </head>
@@ -248,12 +358,13 @@
       Kirana Stores
     </div>
     <nav class="flex gap-12 items-center">
-      <a href="#" onclick="showInventory()"
-        class="no-underline text-white text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-white hover:bg-white hover:bg-opacity-10">Home</a>
-      <a href="#"
+      <a href="#" id="homeNav"
+        class="no-underline text-white font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl bg-white bg-opacity-10 relative after:content-[''] after:absolute after:-bottom-3 after:left-1/2 after:transform after:-translate-x-1/2 after:w-[30px] after:h-[3px] after:bg-green-custom after:rounded-[2px]"
+        onclick="showHome()">Home</a>
+      <a href="#" id="aboutNav"
         class="no-underline text-white text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-white hover:bg-white hover:bg-opacity-10">About</a>
       <a href="#" id="signupNav"
-        class="no-underline text-white font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl bg-white bg-opacity-10 relative after:content-[''] after:absolute after:-bottom-3 after:left-1/2 after:transform after:-translate-x-1/2 after:w-[30px] after:h-[3px] after:bg-green-custom after:rounded-[2px]">Signup</a>
+        class="no-underline text-white text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-white hover:bg-white hover:bg-opacity-10">Signup</a>
       <a href="#" id="loginNav"
         class="no-underline text-white text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-white hover:bg-white hover:bg-opacity-10">Login</a>
       <button
@@ -264,6 +375,43 @@
 
   <!-- Main Content -->
   <main class="flex justify-center items-center min-h-screen py-32 px-16 pb-16 relative z-10">
+    <!-- Home Page -->
+    <div id="homePage" class="w-full max-w-5xl">
+      <div class="text-center mb-12">
+        <h1 class="text-5xl font-bold text-white mb-4 tracking-tight">Welcome to Kirana Stores</h1>
+        <p class="text-white text-opacity-60 text-lg font-normal leading-relaxed max-w-2xl mx-auto">
+          Your one-stop solution for managing local grocery stores with ease. Discover seamless inventory management,
+          exclusive deals, and a user-friendly experience tailored for retailers and customers alike.
+        </p>
+      </div>
+      <div class="flex justify-center gap-6">
+        <button
+          class="bg-gradient-orange text-white border-none py-4 px-8 rounded-2xl text-base font-semibold cursor-pointer transition-all duration-300 font-poppins tracking-wide hover:transform hover:-translate-y-1 active:transform active:-translate-y-0.5"
+          onclick="showSignup()">Get Started</button>
+        <button
+          class="bg-white bg-opacity-10 border border-white border-opacity-20 text-white py-4 px-8 rounded-2xl text-base font-semibold cursor-pointer transition-all duration-300 font-poppins tracking-wide hover:bg-white hover:bg-opacity-20 hover:transform hover:-translate-y-1 active:transform active:-translate-y-0.5"
+          onclick="showLogin()">Log In</button>
+      </div>
+      <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="team-card">
+          <div class="text-4xl mb-4">📦</div>
+          <h3 class="team-name text-xl font-semibold text-center">Inventory Management</h3>
+          <p class="team-role text-center mb-4 text-sm">Effortlessly track and manage your store's inventory with
+            real-time updates.</p>
+        </div>
+        <div class="team-card">
+          <div class="text-4xl mb-4">🎯</div>
+          <h3 class="team-name text-xl font-semibold text-center">Exclusive Deals</h3>
+          <p class="team-role text-center mb-4 text-sm">Unlock special offers and discounts for your customers.</p>
+        </div>
+        <div class="team-card">
+          <div class="text-4xl mb-4">📱</div>
+          <h3 class="team-name text-xl font-semibold text-center">User-Friendly Interface</h3>
+          <p class="team-role text-center mb-4 text-sm">Navigate with ease, whether you're a retailer or a customer.</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Login Form -->
     <div id="loginForm"
       class="hidden form-container bg-black bg-opacity-85 backdrop-blur-[25px] rounded-3xl py-10 px-16 w-[650px] border border-white border-opacity-10 relative overflow-hidden"
@@ -329,7 +477,7 @@
 
     <!-- Signup Form -->
     <div id="signupForm"
-      class="form-container bg-black bg-opacity-85 backdrop-blur-[25px] rounded-3xl py-10 px-16 w-[650px] border border-white border-opacity-10 relative overflow-hidden"
+      class="hidden form-container bg-black bg-opacity-85 backdrop-blur-[25px] rounded-3xl py-10 px-16 w-[650px] border border-white border-opacity-10 relative overflow-hidden"
       style="box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);">
       <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-orange-top"></div>
 
@@ -391,18 +539,69 @@
         <div>
           <h4 class="notification-title text-green-400 font-semibold mb-2 text-base">Getting Started Tip</h4>
           <p class="text-white text-opacity-80 text-sm leading-6">Sign up with your phone number to create your account.
-            You’ll instantly get your Kirana ID after registration..</p>
+            You'll instantly get your Kirana ID after registration.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- About Page -->
+    <div id="aboutPage" class="hidden w-full max-w-5xl">
+      <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-white mb-2 tracking-tight">About Our Team</h1>
+        <p class="text-white text-opacity-60 text-base font-normal leading-snug">Meet the people behind Kirana Stores
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">
+        <!-- Team Member 1 -->
+        <div class="team-card">
+          <div class="team-avatar"><img src="profile.png"></div>
+          <h3 class="team-name text-xl font-semibold text-center">Abhilash Maiya Y</h3>
+          <p class="team-role text-center mb-4">Frontend Development and Gamification</p>
+          <div class="flex justify-center gap-4">
+            <a href="https://github.com/abhimaiya21" target="_blank" class="team-link">GitHub</a>
+            <a href="https://www.linkedin.com/in/abhilash-maiya-y-b2454b2b0/" target="_blank"
+              class="team-link">LinkedIn</a>
+          </div>
+        </div>
+        <!-- Team Member 2 -->
+        <div class="team-card">
+          <div class="team-avatar"><img src="profile.png"></div>
+          <h3 class="team-name text-xl font-semibold text-center">Machani Bhanu Teja</h3>
+          <p class="team-role text-center mb-4">Combos and Billing Logic Development</p>
+          <div class="flex justify-center gap-4">
+            <a href="https://github.com/MBTeja122" target="_blank" class="team-link">GitHub</a>
+            <a href="https://www.linkedin.com/in/machani-bhanu-teja-a542352bb/" target="_blank"
+              class="team-link">LinkedIn</a>
+          </div>
+        </div>
+        <!-- Team Member 3 -->
+        <div class="team-card">
+          <div class="team-avatar"><img src="profile.png"></div>
+          <h3 class="team-name text-xl font-semibold text-center">Mayur Kumar K N</h3>
+          <p class="team-role text-center mb-4">Database and Inventory Management</p>
+          <div class="flex justify-center gap-4">
+            <a href="https://github.com/Mayur-cinderace" target="_blank" class="team-link">GitHub</a>
+            <a href="https://www.linkedin.com/in/mayur-kumar-k-n-7b6243293/" target="_blank"
+              class="team-link">LinkedIn</a>
+          </div>
         </div>
       </div>
     </div>
   </main>
 
+  <!-- Popup and Overlay -->
+  <div id="popup-overlay" class="popup-overlay"></div>
+  <div id="popup" class="popup">
+    <p id="popup-message"></p>
+    <button class="popup-btn" onclick="closePopup()">OK</button>
+  </div>
+
   <script>
-    // FIXED: Backend API configuration
-    const API_BASE_URL = 'http://localhost:49285/api'; // Updated to match your backend port
+    // Backend API configuration
+    const API_BASE_URL = 'http://localhost:49285/api';
 
     let isDark = true;
-    let activeNavId = 'signupNav'; // Track active nav item
+    let activeNavId = 'homeNav'; // Set home as default active nav
 
     // Theme toggle
     function toggleTheme() {
@@ -413,11 +612,12 @@
       const logo = document.querySelector('.flex.items-center.gap-3');
       const navLinks = document.querySelectorAll('nav a');
       const authContainers = document.querySelectorAll('[id$="Form"]');
-      const titles = document.querySelectorAll('h1');
+      const aboutPage = document.getElementById('aboutPage');
+      const homePage = document.getElementById('homePage');
+      const titles = document.querySelectorAll('h1, h3');
       const subtitles = document.querySelectorAll('p:not(.text-green-400):not(.text-white.text-opacity-80):not(.text-black.text-opacity-80)');
       const labels = document.querySelectorAll('label');
       const inputs = document.querySelectorAll('input, select');
-      const switchTexts = document.querySelectorAll('.text-center > .text-white.text-opacity-60, .text-center > .text-black.text-opacity-60');
       const notificationTexts = document.querySelectorAll('.text-white.text-opacity-80, .text-black.text-opacity-80');
       const bgElements = document.querySelectorAll('[class*="float-"]');
 
@@ -450,6 +650,10 @@
           container.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)';
         });
 
+        // Home and About pages
+        if (homePage) homePage.classList.remove('light');
+        if (aboutPage) aboutPage.classList.remove('light');
+
         // Titles
         titles.forEach(title => {
           title.className = title.className.replace('text-black', 'text-white');
@@ -465,14 +669,9 @@
           label.className = label.className.replace('text-black', 'text-white');
         });
 
-        // Inputs and selects - FIXED
+        // Inputs and selects
         inputs.forEach(input => {
           input.className = 'input-dark w-full py-4 px-5 border-2 border-white border-opacity-15 rounded-2xl text-base bg-white bg-opacity-5 text-white transition-all duration-300 font-poppins font-normal placeholder-white placeholder-opacity-40 cursor-pointer appearance-none focus:outline-none focus:border-green-custom focus:shadow-[0_0_0_4px_rgba(40,167,69,0.15)] focus:bg-white focus:bg-opacity-10';
-        });
-
-        // Switch texts
-        switchTexts.forEach(switchText => {
-          switchText.className = switchText.className.replace('text-black text-opacity-60', 'text-white text-opacity-60');
         });
 
         // Notification texts
@@ -514,6 +713,10 @@
           container.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05)';
         });
 
+        // Home and About pages
+        if (homePage) homePage.classList.add('light');
+        if (aboutPage) aboutPage.classList.add('light');
+
         // Titles
         titles.forEach(title => {
           title.className = title.className.replace('text-white', 'text-black');
@@ -529,14 +732,9 @@
           label.className = label.className.replace('text-white', 'text-black');
         });
 
-        // Inputs and selects - FIXED
+        // Inputs and selects
         inputs.forEach(input => {
           input.className = 'input-light w-full py-4 px-5 border-2 border-black border-opacity-15 rounded-2xl text-base bg-white text-black transition-all duration-300 font-poppins font-normal placeholder-black placeholder-opacity-40 cursor-pointer appearance-none focus:outline-none focus:border-green-custom focus:shadow-[0_0_0_4px_rgba(40,167,69,0.15)] focus:bg-gray-50';
-        });
-
-        // Switch texts
-        switchTexts.forEach(switchText => {
-          switchText.className = switchText.className.replace('text-white text-opacity-60', 'text-black text-opacity-60');
         });
 
         // Notification texts
@@ -552,62 +750,107 @@
     }
 
     function getTimeBasedHint() {
-      const hour = new Date().getHours();
-      if (hour >= 5 && hour < 12) {
-        // Fixed: Replaced em dash with regular dash
+      const HOUR = new Date().getHours();
+      if (HOUR >= 5 && HOUR < 12) {
         return "Good Morning! Fresh stock has arrived - check the new deals.";
-      } else if (hour >= 12 && hour < 17) {
+      } else if (HOUR >= 12 && HOUR < 17) {
         return "Good Afternoon! Don't miss the lunchtime discount on snacks.";
-      } else if (hour >= 17 && hour < 21) {
+      } else if (HOUR >= 17 && HOUR < 21) {
         return "Good Evening! Customers love our fresh vegetables after 5 PM.";
       } else {
         return "Night Tip: Stock up now — we reopen at 7 AM!";
       }
     }
 
-    // Only set hint for signup form
-    const signupHintText = document.querySelector('#signupForm .text-white.text-opacity-80');
-    if (signupHintText && signupHintText.textContent.includes('After signing up')) {
-      // Keep the existing signup hint
-    }
-
     // Navigation functions
-    function showLogin() {
+    function showHome() {
+      document.getElementById('homePage').classList.remove('hidden');
       document.getElementById('signupForm').classList.add('hidden');
-      document.getElementById('loginForm').classList.remove('hidden');
-      activeNavId = 'loginNav';
+      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('aboutPage').classList.add('hidden');
+      activeNavId = 'homeNav';
       updateNavStyles();
     }
 
     function showSignup() {
-      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('homePage').classList.add('hidden');
       document.getElementById('signupForm').classList.remove('hidden');
+      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('aboutPage').classList.add('hidden');
       activeNavId = 'signupNav';
       updateNavStyles();
     }
 
+    function showLogin() {
+      document.getElementById('homePage').classList.add('hidden');
+      document.getElementById('loginForm').classList.remove('hidden');
+      document.getElementById('signupForm').classList.add('hidden');
+      document.getElementById('aboutPage').classList.add('hidden');
+      activeNavId = 'loginNav';
+      updateNavStyles();
+    }
+
+    function showAbout() {
+      document.getElementById('homePage').classList.add('hidden');
+      document.getElementById('signupForm').classList.add('hidden');
+      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('aboutPage').classList.remove('hidden');
+      activeNavId = 'aboutNav';
+      updateNavStyles();
+    }
+
     function updateNavStyles() {
+      const homeNav = document.getElementById('homeNav');
       const signupNav = document.getElementById('signupNav');
       const loginNav = document.getElementById('loginNav');
+      const aboutNav = document.getElementById('aboutNav');
       const isLight = document.body.classList.contains('light');
 
       if (isLight) {
         // Light theme
-        if (activeNavId === 'signupNav') {
+        if (activeNavId === 'homeNav') {
+          homeNav.className = 'nav-link-active no-underline text-black font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl relative after:content-[\'\'] after:absolute after:-bottom-3 after:left-1/2 after:transform after:-translate-x-1/2 after:w-[30px] after:h-[3px] after:bg-green-custom after:rounded-[2px]';
+          signupNav.className = 'nav-link-inactive no-underline text-black text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-black hover:bg-black hover:bg-opacity-5';
+          loginNav.className = 'nav-link-inactive no-underline text-black text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-black hover:bg-black hover:bg-opacity-5';
+          aboutNav.className = 'nav-link-inactive no-underline text-black text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-black hover:bg-black hover:bg-opacity-5';
+        } else if (activeNavId === 'signupNav') {
+          homeNav.className = 'nav-link-inactive no-underline text-black text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-black hover:bg-black hover:bg-opacity-5';
           signupNav.className = 'nav-link-active no-underline text-black font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl relative after:content-[\'\'] after:absolute after:-bottom-3 after:left-1/2 after:transform after:-translate-x-1/2 after:w-[30px] after:h-[3px] after:bg-green-custom after:rounded-[2px]';
           loginNav.className = 'nav-link-inactive no-underline text-black text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-black hover:bg-black hover:bg-opacity-5';
-        } else {
+          aboutNav.className = 'nav-link-inactive no-underline text-black text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-black hover:bg-black hover:bg-opacity-5';
+        } else if (activeNavId === 'loginNav') {
+          homeNav.className = 'nav-link-inactive no-underline text-black text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-black hover:bg-black hover:bg-opacity-5';
           signupNav.className = 'nav-link-inactive no-underline text-black text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-black hover:bg-black hover:bg-opacity-5';
           loginNav.className = 'nav-link-active no-underline text-black font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl relative after:content-[\'\'] after:absolute after:-bottom-3 after:left-1/2 after:transform after:-translate-x-1/2 after:w-[30px] after:h-[3px] after:bg-green-custom after:rounded-[2px]';
+          aboutNav.className = 'nav-link-inactive no-underline text-black text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-black hover:bg-black hover:bg-opacity-5';
+        } else {
+          homeNav.className = 'nav-link-inactive no-underline text-black text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-black hover:bg-black hover:bg-opacity-5';
+          signupNav.className = 'nav-link-inactive no-underline text-black text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-black hover:bg-black hover:bg-opacity-5';
+          loginNav.className = 'nav-link-inactive no-underline text-black text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-black hover:bg-black hover:bg-opacity-5';
+          aboutNav.className = 'nav-link-active no-underline text-black font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl relative after:content-[\'\'] after:absolute after:-bottom-3 after:left-1/2 after:transform after:-translate-x-1/2 after:w-[30px] after:h-[3px] after:bg-green-custom after:rounded-[2px]';
         }
       } else {
         // Dark theme
-        if (activeNavId === 'signupNav') {
+        if (activeNavId === 'homeNav') {
+          homeNav.className = 'no-underline text-white font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl bg-white bg-opacity-10 relative after:content-[\'\'] after:absolute after:-bottom-3 after:left-1/2 after:transform after:-translate-x-1/2 after:w-[30px] after:h-[3px] after:bg-green-custom after:rounded-[2px]';
+          signupNav.className = 'no-underline text-white text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-white hover:bg-white hover:bg-opacity-10';
+          loginNav.className = 'no-underline text-white text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-white hover:bg-white hover:bg-opacity-10';
+          aboutNav.className = 'no-underline text-white text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-white hover:bg-white hover:bg-opacity-10';
+        } else if (activeNavId === 'signupNav') {
+          homeNav.className = 'no-underline text-white text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-white hover:bg-white hover:bg-opacity-10';
           signupNav.className = 'no-underline text-white font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl bg-white bg-opacity-10 relative after:content-[\'\'] after:absolute after:-bottom-3 after:left-1/2 after:transform after:-translate-x-1/2 after:w-[30px] after:h-[3px] after:bg-green-custom after:rounded-[2px]';
           loginNav.className = 'no-underline text-white text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-white hover:bg-white hover:bg-opacity-10';
-        } else {
+          aboutNav.className = 'no-underline text-white text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-white hover:bg-white hover:bg-opacity-10';
+        } else if (activeNavId === 'loginNav') {
+          homeNav.className = 'no-underline text-white text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-white hover:bg-white hover:bg-opacity-10';
           signupNav.className = 'no-underline text-white text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-white hover:bg-white hover:bg-opacity-10';
           loginNav.className = 'no-underline text-white font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl bg-white bg-opacity-10 relative after:content-[\'\'] after:absolute after:-bottom-3 after:left-1/2 after:transform after:-translate-x-1/2 after:w-[30px] after:h-[3px] after:bg-green-custom after:rounded-[2px]';
+          aboutNav.className = 'no-underline text-white text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-white hover:bg-white hover:bg-opacity-10';
+        } else {
+          homeNav.className = 'no-underline text-white text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-white hover:bg-white hover:bg-opacity-10';
+          signupNav.className = 'no-underline text-white text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-white hover:bg-white hover:bg-opacity-10';
+          loginNav.className = 'no-underline text-white text-opacity-70 font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl hover:text-white hover:bg-white hover:bg-opacity-10';
+          aboutNav.className = 'no-underline text-white font-medium text-base transition-all duration-300 py-3 px-6 rounded-xl bg-white bg-opacity-10 relative after:content-[\'\'] after:absolute after:-bottom-3 after:left-1/2 after:transform after:-translate-x-1/2 after:w-[30px] after:h-[3px] after:bg-green-custom after:rounded-[2px]';
         }
       }
     }
@@ -618,14 +861,103 @@
         <div class="flex justify-center items-center min-h-screen bg-gradient-dark font-poppins">
           <div class="bg-black bg-opacity-85 backdrop-blur-[25px] py-16 px-16 rounded-3xl text-center border border-white border-opacity-10" style="box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
             <h2 class="text-white mb-6 text-3xl font-semibold">Inventory Management</h2>
-            <p class="text-white text-opacity-70 mb-10 text-lg">You have successfully logged in!</p>
+            <p class="text-white text-opacity-70 mb-10 text-lg">You have successfully signed up!</p>
             <button onclick="location.reload()" class="bg-gradient-orange text-white border-none py-5 px-10 rounded-2xl cursor-pointer font-poppins text-base font-semibold">Go to Inventory Form</button>
           </div>
         </div>
       `;
     }
 
-    // Form handlers - FIXED with proper API calls
+    async function handleSignup(event) {
+      event.preventDefault();
+
+      const submitBtn = event.target.querySelector('button[type="submit"]');
+      const name = document.getElementById('signupName').value.trim();
+      const mobile = document.getElementById('signupMobile').value.trim();
+      const dob = document.getElementById('signupDOB').value;
+      const role = document.getElementById('signupRole').value;
+
+      const setBtnLoading = (loading) => {
+        if (!submitBtn) return;
+        submitBtn.disabled = loading;
+        submitBtn.textContent = loading ? 'Creating account...' : 'Sign up';
+      };
+
+      try {
+        if (!name) throw new Error('Please enter your full name');
+        if (!/^[6-9]\d{9}$/.test(mobile)) throw new Error('Please enter a valid 10-digit mobile number');
+        if (!dob) throw new Error('Please select your date of birth');
+
+        const birthDate = new Date(dob);
+        if (isNaN(birthDate.getTime())) throw new Error('Invalid date of birth');
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) age--;
+        if (age < 16) throw new Error('You must be at least 16 years old to register');
+        if (!role) throw new Error('Please select a role');
+
+        setBtnLoading(true);
+
+        const payload = {
+          fullName: name,
+          mobile,
+          role,
+          dob
+        };
+
+        const response = await fetch(`${API_BASE_URL}/signup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const body = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          const serverMsg = body.error || body.message || `Signup failed (status ${response.status})`;
+          throw new Error(serverMsg);
+        }
+
+        const kiranaId = body.kiranaId ?? 'N/A';
+        showPopup(`Account created successfully as ${role}!\nKirana ID: ${kiranaId}`);
+
+        // Redirect based on role
+        if (role === 'retailer') {
+          const redirectUrl = body.redirectUrl || 'http://127.0.0.1:8000/inventory.html';
+          if (!window.location.href.includes('inventory.html')) {
+            setTimeout(() => {
+              window.location.href = redirectUrl;
+            }, 2000);
+          }
+        } else if (role === 'user') {
+          const redirectUrl = body.redirectUrl || 'http://127.0.0.1:8000/try_your_luck.html';
+          if (!window.location.href.includes('try_your_luck.html')) {
+            setTimeout(() => {
+              window.location.href = redirectUrl;
+            }, 2000);
+          }
+        } else {
+          setTimeout(() => {
+            showInventory();
+          }, 2000);
+        }
+
+      } catch (err) {
+        console.error('Signup error:', err);
+        if (err.message.includes('fetch')) {
+          showPopup('Unable to connect to server. Please ensure the backend is running on port 49285.');
+        } else {
+          showPopup(err.message || 'Error creating account. Please try again.');
+        }
+      } finally {
+        setBtnLoading(false);
+      }
+    }
+
     async function handleLogin(event) {
       event.preventDefault();
 
@@ -678,7 +1010,7 @@
         }
 
         // Success
-        alert(`Welcome back, ${data.fullName}!\nLogin successful as ${data.role}\nKirana ID: ${data.kiranaId}`);
+        showPopup(`Welcome back, ${data.fullName}!\nLogin successful as ${data.role}\nKirana ID: ${data.kiranaId}`);
 
         // Store user info for the session
         window.currentUser = {
@@ -698,7 +1030,7 @@
           if (!window.location.href.includes('inventory.html')) {
             setTimeout(() => {
               window.location.href = redirectUrl;
-            }, 1000);
+            }, 2000);
           }
         } else if (data.role === 'user') {
           // For users, redirect to try_your_luck.html
@@ -708,13 +1040,13 @@
           if (!window.location.href.includes('try_your_luck.html')) {
             setTimeout(() => {
               window.location.href = redirectUrl;
-            }, 1000);
+            }, 2000);
           }
         } else {
           // For other roles, show inventory
           setTimeout(() => {
             showInventory();
-          }, 1000);
+          }, 2000);
         }
 
       } catch (error) {
@@ -722,112 +1054,36 @@
 
         // Check if it's a network error
         if (error.message.includes('fetch') || error.name === 'TypeError') {
-          alert('Unable to connect to server. Please ensure the backend is running on port 49285.');
+          showPopup('Unable to connect to server. Please ensure the backend is running on port 49285.');
         } else {
-          alert(error.message || 'Login failed. Please try again.');
+          showPopup(error.message || 'Login failed. Please try again.');
         }
       } finally {
-        setBtnLoading(false);
-      }
-    }
-
-    async function handleSignup(event) {
-      event.preventDefault();
-
-      // Button (if present) - to prevent double submits
-      const submitBtn = event.target.querySelector('button[type="submit"]') || document.querySelector('button[type="submit"]');
-
-      // Get form values
-      const name = document.getElementById('signupName').value.trim();
-      const mobile = document.getElementById('signupMobile').value.trim();
-      const dob = document.getElementById('signupDOB').value;
-      const role = document.getElementById('signupRole').value;
-
-      // Helpers
-      const setBtnLoading = (loading) => {
-        if (!submitBtn) return;
-        submitBtn.disabled = loading;
-        submitBtn.textContent = loading ? 'Creating account...' : 'Sign up';
-      };
-
-      // Basic validation
-      try {
-        if (!name) throw new Error('Please enter your full name');
-
-        // Stronger Indian mobile validation: 10 digits and starts with 6-9
-        if (!/^[6-9]\d{9}$/.test(mobile)) throw new Error('Please enter a valid 10-digit mobile number');
-
-        if (!dob) throw new Error('Please select your date of birth');
-
-        // Age validation (>= 16)
-        const birthDate = new Date(dob);
-        if (isNaN(birthDate.getTime())) throw new Error('Invalid date of birth');
-        const today = new Date();
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) age--;
-        if (age < 16) throw new Error('You must be at least 16 years old to register');
-
-        if (!role) throw new Error('Please select a role');
-
-        // Disable button while request is in-flight
-        setBtnLoading(true);
-
-        // FIXED: Prepare payload with correct API URL
-        const payload = {
-          fullName: name,
-          mobile,
-          role,
-          dob // optional; backend can ignore if not needed
-        };
-
-        const response = await fetch(`${API_BASE_URL}/signup`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(payload)
-        });
-
-        const body = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-          // Try to show server error message, fallback to a generic message
-          const serverMsg = body.error || body.message || `Signup failed (status ${response.status})`;
-          throw new Error(serverMsg);
-        }
-
-        // Success — backend returns kiranaId and inserted id
-        const kiranaId = body.kiranaId ?? 'N/A';
-        alert(`Account created successfully as ${role}!\nKirana ID: ${kiranaId}`);
-
-        // Move to login view
-        showLogin();
-
-      } catch (err) {
-        console.error('Signup error:', err);
-        // Check if it's a network error
-        if (err.message.includes('fetch')) {
-          alert('Unable to connect to server. Please ensure the backend is running on port 49285.');
-        } else {
-          alert(err.message || 'Error creating account. Please try again.');
-        }
-      } finally {
-        // Re-enable button
         setBtnLoading(false);
       }
     }
 
     // Navigation event listeners
-    document.getElementById('loginNav').addEventListener('click', (e) => {
-      e.preventDefault();
-      showLogin();
-    });
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('homeNav').addEventListener('click', (e) => {
+        e.preventDefault();
+        showHome();
+      });
+      document.getElementById('signupNav').addEventListener('click', (e) => {
+        e.preventDefault();
+        showSignup();
+      });
+      document.getElementById('loginNav').addEventListener('click', (e) => {
+        e.preventDefault();
+        showLogin();
+      });
+      document.getElementById('aboutNav').addEventListener('click', (e) => {
+        e.preventDefault();
+        showAbout();
+      });
 
-    document.getElementById('signupNav').addEventListener('click', (e) => {
-      e.preventDefault();
-      showSignup();
+      // Show home page by default
+      showHome();
     });
 
     // Auto-format mobile number
@@ -844,8 +1100,6 @@
         const today = new Date();
         const maxDate = today.toISOString().split('T')[0];
         dobInput.setAttribute('max', maxDate);
-
-        // Set a reasonable min date (100 years ago)
         const minDate = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate());
         dobInput.setAttribute('min', minDate.toISOString().split('T')[0]);
       }
@@ -865,6 +1119,28 @@
         console.log('Make sure your Flask backend is running on port 49285');
       }
     });
+
+    // Popup functions
+    function showPopup(message) {
+      const popup = document.getElementById('popup');
+      const popupOverlay = document.getElementById('popup-overlay');
+      const popupMessage = document.getElementById('popup-message');
+
+      popupMessage.textContent = message;
+      popup.style.display = 'block';
+      popupOverlay.style.display = 'block';
+
+      setTimeout(() => {
+        closePopup();
+      }, 2000); // Auto-close after 2 seconds
+    }
+
+    function closePopup() {
+      const popup = document.getElementById('popup');
+      const popupOverlay = document.getElementById('popup-overlay');
+      popup.style.display = 'none';
+      popupOverlay.style.display = 'none';
+    }
   </script>
 </body>
 

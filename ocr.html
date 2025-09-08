@@ -685,7 +685,7 @@
                 modal.classList.add('animate-fade-in');
 
                 try {
-                    const response = await fetch(`${this.backendUrl}/generate-bill`, {
+                    const response = await fetch(`${this.backendUrl}/api/generate-bill`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ items: this.extractedItems })

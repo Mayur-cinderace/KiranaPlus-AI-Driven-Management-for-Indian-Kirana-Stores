@@ -160,6 +160,12 @@
             </div>
         </div>
 
+        <!-- Alerts Section -->
+        <div class="glassmorphism rounded-2xl p-6 mb-6 animate-fade-in" id="alertsSection" style="display: none;">
+            <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Alerts</h2>
+            <div id="alertsContent"></div>
+        </div>
+
         <!-- Filters Section -->
         <div class="glassmorphism rounded-2xl p-6 mb-6 animate-slide-up">
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">🔍 Search & Filters</h3>
@@ -252,243 +258,370 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Success/Error Toast -->
-    <div id="toast"
-        class="fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
-        <div class="flex items-center space-x-2">
-            <span id="toastIcon">✅</span>
-            <span id="toastMessage">Success!</span>
+        <!-- Edit Modal -->
+        <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="glassmorphism rounded-2xl p-6 max-w-2xl w-full">
+                <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-6">Edit Item</h2>
+                <form id="editForm">
+                    <input type="hidden" id="editItemId">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Left Column -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Item
+                                ID</label>
+                            <input type="text" id="editItemIdField"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Item
+                                Name</label>
+                            <input type="text" id="editItemName"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Brand</label>
+                            <input type="text" id="editBrand"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                required>
+                        </div>
+                        <div>
+                            <label
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
+                            <input type="text" id="editCategory"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Unit
+                                Size</label>
+                            <input type="text" id="editUnitSize"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                required>
+                        </div>
+                        <!-- Right Column -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Stock
+                                Quantity</label>
+                            <input type="number" id="editStockQuantity"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                required min="0">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Base
+                                Price</label>
+                            <input type="number" id="editBasePrice"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                required min="0" step="0.01">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Selling
+                                Price</label>
+                            <input type="number" id="editSellingPrice"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                required min="0" step="0.01">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">MRP</label>
+                            <input type="number" id="editMrp"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                required min="0" step="0.01">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">GST %</label>
+                            <input type="number" id="editGst"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                required min="0" max="100" step="0.1">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Expiry
+                                Date</label>
+                            <input type="date" id="editExpiryDate"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                required>
+                        </div>
+                    </div>
+                    <div class="flex justify-end mt-6 space-x-4">
+                        <button type="button" onclick="closeEditModal()"
+                            class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all duration-200">Cancel</button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all duration-200">Save
+                            Changes</button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
 
-    <script>
-        class InventoryTableManager {
-            constructor() {
-                this.allItems = [];
-                this.filteredItems = [];
-                this.isDarkMode = false;
-                this.init();
-            }
+        <!-- Success/Error Toast -->
+        <div id="toast"
+            class="fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+            <div class="flex items-center space-x-2">
+                <span id="toastIcon">✅</span>
+                <span id="toastMessage">Success!</span>
+            </div>
+        </div>
 
-            init() {
-                this.setupEventListeners();
-                this.loadInventoryData();
-            }
+        <script>
+            class InventoryTableManager {
+                constructor() {
+                    this.allItems = [];
+                    this.filteredItems = [];
+                    this.isDarkMode = false;
+                    this.init();
+                }
 
-            setupEventListeners() {
-                // Search and filter inputs
-                document.getElementById('searchInput').addEventListener('input', () => this.applyFilters());
-                document.getElementById('categoryFilter').addEventListener('change', () => this.applyFilters());
-                document.getElementById('brandFilter').addEventListener('change', () => this.applyFilters());
-                document.getElementById('stockLevelFilter').addEventListener('change', () => this.applyFilters());
+                init() {
+                    this.setupEventListeners();
+                    this.loadInventoryData();
+                }
 
-                // Theme toggle
-                document.getElementById('themeToggle').addEventListener('click', () => this.toggleTheme());
-            }
+                setupEventListeners() {
+                    // Search and filter inputs
+                    document.getElementById('searchInput').addEventListener('input', () => this.applyFilters());
+                    document.getElementById('categoryFilter').addEventListener('change', () => this.applyFilters());
+                    document.getElementById('brandFilter').addEventListener('change', () => this.applyFilters());
+                    document.getElementById('stockLevelFilter').addEventListener('change', () => this.applyFilters());
 
-            async loadInventoryData() {
-                this.showLoadingState();
+                    // Theme toggle
+                    document.getElementById('themeToggle').addEventListener('click', () => this.toggleTheme());
 
-                try {
-                    // Replace this with your actual API endpoint
-                    const response = await fetch('http://127.0.0.1:49285/get-all-items');
+                    // Edit form submission
+                    document.getElementById('editForm').addEventListener('submit', (e) => this.handleEditSubmit(e));
+                }
 
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch inventory data');
+                async loadInventoryData() {
+                    this.showLoadingState();
+
+                    try {
+                        const response = await fetch('http://127.0.0.1:49285/api/get-all-items');
+
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch inventory data');
+                        }
+
+                        const data = await response.json();
+                        this.allItems = data.items || [];
+                        this.filteredItems = [...this.allItems];
+
+                        this.populateFilters();
+                        this.updateSummaryStats();
+                        this.updateAlerts();
+                        this.renderTable();
+                        this.hideLoadingState();
+
+                    } catch (error) {
+                        console.error('Error loading inventory:', error);
+                        this.loadMockData();
                     }
+                }
 
-                    const data = await response.json();
-                    this.allItems = data.items || [];
+                loadMockData() {
+                    this.allItems = [
+                        {
+                            _id: "1",
+                            itemId: "BAM-TAT-001",
+                            itemName: "Basmati Rice",
+                            brand: "Tata",
+                            category: "grains-staples",
+                            unitSize: "5kg",
+                            stockQuantity: 25,
+                            basePrice: 400,
+                            sellingPrice: 420,
+                            mrp: 450,
+                            gst: 5,
+                            expiryDate: "2025-12-31",
+                            addedAt: "2024-01-15"
+                        },
+                        {
+                            _id: "2",
+                            itemId: "MAG-NES-002",
+                            itemName: "Maggi Noodles",
+                            brand: "Nestle",
+                            category: "instant-foods",
+                            unitSize: "70g",
+                            stockQuantity: 5,
+                            basePrice: 12,
+                            sellingPrice: 13.44,
+                            mrp: 15,
+                            gst: 12,
+                            expiryDate: "2025-08-30",
+                            addedAt: "2024-01-16"
+                        },
+                        {
+                            _id: "3",
+                            itemId: "COC-COC-003",
+                            itemName: "Coca Cola",
+                            brand: "Coca Cola",
+                            category: "beverages",
+                            unitSize: "250ml",
+                            stockQuantity: 0,
+                            basePrice: 18,
+                            sellingPrice: 18.9,
+                            mrp: 22,
+                            gst: 5,
+                            expiryDate: "2025-06-15",
+                            addedAt: "2024-01-17"
+                        },
+                        {
+                            _id: "4",
+                            itemId: "TOM-NA-004",
+                            itemName: "Fresh Tomatoes",
+                            brand: "NA",
+                            category: "fresh-produce",
+                            unitSize: "1kg",
+                            stockQuantity: 50,
+                            basePrice: 30,
+                            sellingPrice: 30,
+                            mrp: 35,
+                            gst: 0,
+                            expiryDate: "2024-01-25",
+                            addedAt: "2024-01-18"
+                        }
+                    ];
+
                     this.filteredItems = [...this.allItems];
-
                     this.populateFilters();
                     this.updateSummaryStats();
+                    this.updateAlerts();
                     this.renderTable();
                     this.hideLoadingState();
-
-                } catch (error) {
-                    console.error('Error loading inventory:', error);
-                    // Use mock data for demonstration
-                    this.loadMockData();
                 }
-            }
 
-            loadMockData() {
-                // Mock data matching your inventory structure
-                this.allItems = [
-                    {
-                        _id: "1",
-                        itemId: "BAM-TAT-001",
-                        itemName: "Basmati Rice",
-                        brand: "Tata",
-                        category: "grains-staples",
-                        unitSize: "5kg",
-                        stockQuantity: 25,
-                        basePrice: 400,
-                        sellingPrice: 420,
-                        mrp: 450,
-                        gst: 5,
-                        expiryDate: "2025-12-31",
-                        addedAt: "2024-01-15"
-                    },
-                    {
-                        _id: "2",
-                        itemId: "MAG-NES-002",
-                        itemName: "Maggi Noodles",
-                        brand: "Nestle",
-                        category: "instant-foods",
-                        unitSize: "70g",
-                        stockQuantity: 5,
-                        basePrice: 12,
-                        sellingPrice: 13.44,
-                        mrp: 15,
-                        gst: 12,
-                        expiryDate: "2025-08-30",
-                        addedAt: "2024-01-16"
-                    },
-                    {
-                        _id: "3",
-                        itemId: "COC-COC-003",
-                        itemName: "Coca Cola",
-                        brand: "Coca Cola",
-                        category: "beverages",
-                        unitSize: "250ml",
-                        stockQuantity: 0,
-                        basePrice: 18,
-                        sellingPrice: 18.9,
-                        mrp: 22,
-                        gst: 5,
-                        expiryDate: "2025-06-15",
-                        addedAt: "2024-01-17"
-                    },
-                    {
-                        _id: "4",
-                        itemId: "TOM-NA-004",
-                        itemName: "Fresh Tomatoes",
-                        brand: "NA",
-                        category: "fresh-produce",
-                        unitSize: "1kg",
-                        stockQuantity: 50,
-                        basePrice: 30,
-                        sellingPrice: 30,
-                        mrp: 35,
-                        gst: 0,
-                        expiryDate: "2024-01-25",
-                        addedAt: "2024-01-18"
-                    }
-                ];
+                populateFilters() {
+                    const categories = [...new Set(this.allItems.map(item => item.category))];
+                    const categoryFilter = document.getElementById('categoryFilter');
+                    categoryFilter.innerHTML = '<option value="">All Categories</option>';
+                    categories.forEach(category => {
+                        const displayName = category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        categoryFilter.innerHTML += `<option value="${category}">${displayName}</option>`;
+                    });
 
-                this.filteredItems = [...this.allItems];
-                this.populateFilters();
-                this.updateSummaryStats();
-                this.renderTable();
-                this.hideLoadingState();
-            }
+                    const brands = [...new Set(this.allItems.map(item => item.brand))];
+                    const brandFilter = document.getElementById('brandFilter');
+                    brandFilter.innerHTML = '<option value="">All Brands</option>';
+                    brands.forEach(brand => {
+                        brandFilter.innerHTML += `<option value="${brand}">${brand}</option>`;
+                    });
+                }
 
-            populateFilters() {
-                // Populate category filter
-                const categories = [...new Set(this.allItems.map(item => item.category))];
-                const categoryFilter = document.getElementById('categoryFilter');
-                categoryFilter.innerHTML = '<option value="">All Categories</option>';
-                categories.forEach(category => {
-                    const displayName = category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
-                    categoryFilter.innerHTML += `<option value="${category}">${displayName}</option>`;
-                });
+                applyFilters() {
+                    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                    const categoryFilter = document.getElementById('categoryFilter').value;
+                    const brandFilter = document.getElementById('brandFilter').value;
+                    const stockLevelFilter = document.getElementById('stockLevelFilter').value;
 
-                // Populate brand filter
-                const brands = [...new Set(this.allItems.map(item => item.brand))];
-                const brandFilter = document.getElementById('brandFilter');
-                brandFilter.innerHTML = '<option value="">All Brands</option>';
-                brands.forEach(brand => {
-                    brandFilter.innerHTML += `<option value="${brand}">${brand}</option>`;
-                });
-            }
+                    this.filteredItems = this.allItems.filter(item => {
+                        const matchesSearch = !searchTerm ||
+                            item.itemName.toLowerCase().includes(searchTerm) ||
+                            item.brand.toLowerCase().includes(searchTerm) ||
+                            item.itemId.toLowerCase().includes(searchTerm);
 
-            applyFilters() {
-                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-                const categoryFilter = document.getElementById('categoryFilter').value;
-                const brandFilter = document.getElementById('brandFilter').value;
-                const stockLevelFilter = document.getElementById('stockLevelFilter').value;
+                        const matchesCategory = !categoryFilter || item.category === categoryFilter;
+                        const matchesBrand = !brandFilter || item.brand === brandFilter;
 
-                this.filteredItems = this.allItems.filter(item => {
-                    // Search filter
-                    const matchesSearch = !searchTerm ||
-                        item.itemName.toLowerCase().includes(searchTerm) ||
-                        item.brand.toLowerCase().includes(searchTerm) ||
-                        item.itemId.toLowerCase().includes(searchTerm);
+                        let matchesStockLevel = true;
+                        if (stockLevelFilter === 'low') {
+                            matchesStockLevel = item.stockQuantity < 10 && item.stockQuantity > 0;
+                        } else if (stockLevelFilter === 'out') {
+                            matchesStockLevel = item.stockQuantity === 0;
+                        }
 
-                    // Category filter
-                    const matchesCategory = !categoryFilter || item.category === categoryFilter;
+                        return matchesSearch && matchesCategory && matchesBrand && matchesStockLevel;
+                    });
 
-                    // Brand filter
-                    const matchesBrand = !brandFilter || item.brand === brandFilter;
-
-                    // Stock level filter
-                    let matchesStockLevel = true;
-                    if (stockLevelFilter === 'low') {
-                        matchesStockLevel = item.stockQuantity < 10 && item.stockQuantity > 0;
-                    } else if (stockLevelFilter === 'out') {
-                        matchesStockLevel = item.stockQuantity === 0;
-                    }
-
-                    return matchesSearch && matchesCategory && matchesBrand && matchesStockLevel;
-                });
-
-                this.renderTable();
-                this.updateItemCount();
-            }
-
-            clearFilters() {
-                document.getElementById('searchInput').value = '';
-                document.getElementById('categoryFilter').value = '';
-                document.getElementById('brandFilter').value = '';
-                document.getElementById('stockLevelFilter').value = '';
-                this.filteredItems = [...this.allItems];
-                this.renderTable();
-                this.updateItemCount();
-            }
-
-            updateSummaryStats() {
-                const totalItems = this.allItems.length;
-                const lowStockItems = this.allItems.filter(item => item.stockQuantity < 10 && item.stockQuantity > 0).length;
-                const outOfStockItems = this.allItems.filter(item => item.stockQuantity === 0).length;
-                const totalValue = this.allItems.reduce((sum, item) => sum + (item.sellingPrice * item.stockQuantity), 0);
-                const avgValue = totalItems > 0 ? totalValue / totalItems : 0;
-
-                document.getElementById('totalItems').textContent = totalItems;
-                document.getElementById('lowStockItems').textContent = lowStockItems;
-                document.getElementById('outOfStockItems').textContent = outOfStockItems;
-                document.getElementById('totalValue').textContent = `₹${totalValue.toFixed(2)}`;
-                document.getElementById('avgValue').textContent = `₹${avgValue.toFixed(2)}`;
-            }
-
-            updateItemCount() {
-                document.getElementById('itemCount').textContent = this.filteredItems.length;
-            }
-
-            renderTable() {
-                const tableBody = document.getElementById('inventoryTableBody');
-
-                if (this.filteredItems.length === 0) {
-                    document.getElementById('emptyState').classList.remove('hidden');
-                    tableBody.innerHTML = '';
+                    this.renderTable();
                     this.updateItemCount();
-                    return;
                 }
 
-                document.getElementById('emptyState').classList.add('hidden');
+                clearFilters() {
+                    document.getElementById('searchInput').value = '';
+                    document.getElementById('categoryFilter').value = '';
+                    document.getElementById('brandFilter').value = '';
+                    document.getElementById('stockLevelFilter').value = '';
+                    this.filteredItems = [...this.allItems];
+                    this.renderTable();
+                    this.updateItemCount();
+                }
 
-                const rows = this.filteredItems.map(item => {
-                    const stockClass = item.stockQuantity === 0 ? 'stock-out' :
-                        item.stockQuantity < 10 ? 'stock-low' : 'stock-normal';
+                updateSummaryStats() {
+                    const totalItems = this.allItems.length;
+                    const lowStockItems = this.allItems.filter(item => item.stockQuantity < 10 && item.stockQuantity > 0).length;
+                    const outOfStockItems = this.allItems.filter(item => item.stockQuantity === 0).length;
+                    const totalValue = this.allItems.reduce((sum, item) => sum + (item.sellingPrice * item.stockQuantity), 0);
+                    const avgValue = totalItems > 0 ? totalValue / totalItems : 0;
 
-                    const categoryDisplay = item.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
-                    const expiryDate = new Date(item.expiryDate).toLocaleDateString('en-IN');
-                    const isExpiringSoon = new Date(item.expiryDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+                    document.getElementById('totalItems').textContent = totalItems;
+                    document.getElementById('lowStockItems').textContent = lowStockItems;
+                    document.getElementById('outOfStockItems').textContent = outOfStockItems;
+                    document.getElementById('totalValue').textContent = `₹${totalValue.toFixed(2)}`;
+                    document.getElementById('avgValue').textContent = `₹${avgValue.toFixed(2)}`;
+                }
 
-                    return `
+                updateAlerts() {
+                    let alertsHtml = '';
+                    const now = new Date();
+
+                    const expiredItems = this.allItems.filter(item => new Date(item.expiryDate) < now);
+                    if (expiredItems.length > 0) {
+                        const names = expiredItems.map(item => `${item.itemName} (${item.brand})`).join(', ');
+                        alertsHtml += `<p class="text-red-600 mb-2">The following items have expired: ${names}</p>`;
+                    }
+
+                    const lowStockItems = this.allItems.filter(item => item.stockQuantity < 10 && item.stockQuantity > 0);
+                    if (lowStockItems.length > 0) {
+                        const names = lowStockItems.map(item => `${item.itemName} (${item.brand})`).join(', ');
+                        alertsHtml += `<p class="text-orange-600 mb-2">The following items have low stock: ${names}</p>`;
+                    }
+
+                    const outOfStockItems = this.allItems.filter(item => item.stockQuantity === 0);
+                    if (outOfStockItems.length > 0) {
+                        const names = outOfStockItems.map(item => `${item.itemName} (${item.brand})`).join(', ');
+                        alertsHtml += `<p class="text-red-600 mb-2">The following items are out of stock: ${names}</p>`;
+                    }
+
+                    document.getElementById('alertsContent').innerHTML = alertsHtml;
+
+                    const alertsSection = document.getElementById('alertsSection');
+                    if (alertsHtml === '') {
+                        alertsSection.style.display = 'none';
+                    } else {
+                        alertsSection.style.display = 'block';
+                    }
+                }
+
+                updateItemCount() {
+                    document.getElementById('itemCount').textContent = this.filteredItems.length;
+                }
+
+                renderTable() {
+                    const tableBody = document.getElementById('inventoryTableBody');
+
+                    if (this.filteredItems.length === 0) {
+                        document.getElementById('emptyState').classList.remove('hidden');
+                        tableBody.innerHTML = '';
+                        this.updateItemCount();
+                        return;
+                    }
+
+                    document.getElementById('emptyState').classList.add('hidden');
+
+                    const now = new Date();
+
+                    const rows = this.filteredItems.map(item => {
+                        const stockClass = item.stockQuantity === 0 ? 'stock-out' :
+                            item.stockQuantity < 10 ? 'stock-low' : 'stock-normal';
+
+                        const categoryDisplay = item.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        const expiryDateObj = new Date(item.expiryDate);
+                        const expiryDate = expiryDateObj.toLocaleDateString('en-IN');
+                        const isExpired = expiryDateObj < now;
+                        const isExpiringSoon = !isExpired && expiryDateObj < new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+                        const expiryClass = isExpired ? 'text-red-600 font-bold' : isExpiringSoon ? 'text-orange-600 font-semibold' : 'text-gray-600 dark:text-gray-300';
+                        const expiryText = isExpired ? `${expiryDate} (Expired)` : expiryDate;
+
+                        return `
             <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors duration-200">
               <td class="px-4 py-3 text-sm font-mono text-gray-900 dark:text-white">${item.itemId}</td>
               <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">${item.itemName}</td>
@@ -500,100 +633,212 @@
               <td class="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-white">₹${item.sellingPrice.toFixed(2)}</td>
               <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">₹${item.mrp.toFixed(2)}</td>
               <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">${item.gst}%</td>
-              <td class="px-4 py-3 text-sm ${isExpiringSoon ? 'text-orange-600 font-semibold' : 'text-gray-600 dark:text-gray-300'}">${expiryDate}</td>
+              <td class="px-4 py-3 text-sm ${expiryClass}">${expiryText}</td>
               <td class="px-4 py-3 text-sm">
-                <button onclick="editItem('${item._id}')" class="text-blue-600 hover:text-blue-800 mr-2" title="Edit">
+                <button onclick="inventoryManager.editItem('${item._id}')" class="text-blue-600 hover:text-blue-800 mr-2" title="Edit">
                   ✏️
                 </button>
-                <button onclick="deleteItem('${item._id}')" class="text-red-600 hover:text-red-800" title="Delete">
+                <button onclick="inventoryManager.deleteItem('${item._id}')" class="text-red-600 hover:text-red-800" title="Delete">
                   🗑️
                 </button>
               </td>
             </tr>
           `;
-                }).join('');
+                    }).join('');
 
-                tableBody.innerHTML = rows;
-                this.updateItemCount();
-            }
+                    tableBody.innerHTML = rows;
+                    this.updateItemCount();
+                }
 
-            showLoadingState() {
-                document.getElementById('loadingState').style.display = 'flex';
-                document.getElementById('emptyState').classList.add('hidden');
-            }
+                async editItem(id) {
+                    try {
+                        const response = await fetch(`http://127.0.0.1:49285/api/product/${id}`);
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch item details');
+                        }
+                        const item = await response.json();
 
-            hideLoadingState() {
-                document.getElementById('loadingState').style.display = 'none';
-            }
+                        // Populate the edit form
+                        document.getElementById('editItemId').value = item.id;
+                        document.getElementById('editItemIdField').value = item.item_id;
+                        document.getElementById('editItemName').value = item.item_name;
+                        document.getElementById('editBrand').value = item.brand;
+                        document.getElementById('editCategory').value = item.category;
+                        document.getElementById('editUnitSize').value = item.unit_size;
+                        document.getElementById('editStockQuantity').value = item.stock_quantity;
+                        document.getElementById('editBasePrice').value = item.base_price;
+                        document.getElementById('editSellingPrice').value = item.selling_price;
+                        document.getElementById('editMrp').value = item.mrp;
+                        document.getElementById('editGst').value = item.gst_rate;
+                        document.getElementById('editExpiryDate').value = item.expiry_date.split('T')[0];
 
-            showToast(message, type = 'success') {
-                const toast = document.getElementById('toast');
-                const icon = document.getElementById('toastIcon');
-                const messageElement = document.getElementById('toastMessage');
+                        // Show the modal
+                        document.getElementById('editModal').classList.remove('hidden');
+                    } catch (error) {
+                        console.error('Error fetching item for edit:', error);
+                        this.showToast('Failed to load item details', 'error');
+                    }
+                }
 
-                toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50 ${type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'
-                    }`;
+                async handleEditSubmit(event) {
+                    event.preventDefault();
+                    const itemId = document.getElementById('editItemId').value;
+                    const updatedItem = {
+                        itemId: document.getElementById('editItemIdField').value,
+                        itemName: document.getElementById('editItemName').value,
+                        brand: document.getElementById('editBrand').value,
+                        category: document.getElementById('editCategory').value,
+                        unitSize: document.getElementById('editUnitSize').value,
+                        stockQuantity: parseInt(document.getElementById('editStockQuantity').value),
+                        basePrice: parseFloat(document.getElementById('editBasePrice').value),
+                        sellingPrice: parseFloat(document.getElementById('editSellingPrice').value),
+                        mrp: parseFloat(document.getElementById('editMrp').value),
+                        gst: parseFloat(document.getElementById('editGst').value),
+                        expiryDate: document.getElementById('editExpiryDate').value
+                    };
 
-                icon.textContent = type === 'success' ? '✅' : '❌';
-                messageElement.textContent = message;
+                    try {
+                        const response = await fetch(`http://127.0.0.1:49285/api/update-product/${itemId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(updatedItem)
+                        });
 
-                toast.style.transform = 'translateX(0)';
+                        if (!response.ok) {
+                            throw new Error('Failed to update item');
+                        }
 
-                setTimeout(() => {
-                    toast.style.transform = 'translateX(100%)';
-                }, 3000);
-            }
+                        this.showToast('Item updated successfully', 'success');
+                        this.closeEditModal();
+                        await this.loadInventoryData(); // Refresh the table
+                    } catch (error) {
+                        console.error('Error updating item:', error);
+                        this.showToast('Failed to update item', 'error');
+                    }
+                }
 
-            toggleTheme() {
-                this.isDarkMode = !this.isDarkMode;
-                const html = document.documentElement;
-                const toggle = document.getElementById('themeToggle');
+                async deleteItem(id) {
+                    if (!confirm('Are you sure you want to delete this item?')) {
+                        return;
+                    }
 
-                if (this.isDarkMode) {
-                    html.classList.add('dark');
-                    toggle.innerHTML = '<span class="text-lg">☀️</span>';
-                } else {
-                    html.classList.remove('dark');
-                    toggle.innerHTML = '<span class="text-lg">🌙</span>';
+                    try {
+                        const response = await fetch(`http://127.0.0.1:49285/api/delete-product/${id}`, {
+                            method: 'DELETE'
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Failed to delete item');
+                        }
+
+                        this.showToast('Item deleted successfully', 'success');
+                        await this.loadInventoryData(); // Refresh the table
+                    } catch (error) {
+                        console.error('Error deleting item:', error);
+                        this.showToast('Failed to delete item', 'error');
+                    }
+                }
+
+                closeEditModal() {
+                    document.getElementById('editModal').classList.add('hidden');
+                    document.getElementById('editForm').reset();
+                }
+
+                showLoadingState() {
+                    document.getElementById('loadingState').style.display = 'flex';
+                    document.getElementById('emptyState').classList.add('hidden');
+                }
+
+                hideLoadingState() {
+                    document.getElementById('loadingState').style.display = 'none';
+                }
+
+                showToast(message, type = 'success') {
+                    const toast = document.getElementById('toast');
+                    const icon = document.getElementById('toastIcon');
+                    const messageElement = document.getElementById('toastMessage');
+
+                    toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50 ${type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'
+                        }`;
+
+                    icon.textContent = type === 'success' ? '✅' : '❌';
+                    messageElement.textContent = message;
+
+                    toast.style.transform = 'translateX(0)';
+                    setTimeout(() => {
+                        toast.style.transform = 'translateX(100%)';
+                    }, 3000);
+                }
+
+                toggleTheme() {
+                    this.isDarkMode = !this.isDarkMode;
+                    const html = document.documentElement;
+                    const toggle = document.getElementById('themeToggle');
+
+                    if (this.isDarkMode) {
+                        html.classList.add('dark');
+                        toggle.innerHTML = '<span class="text-lg">☀️</span>';
+                    } else {
+                        html.classList.remove('dark');
+                        toggle.innerHTML = '<span class="text-lg">🌙</span>';
+                    }
+                }
+
+                exportToCSV() {
+                    const headers = ['Item ID', 'Item Name', 'Brand', 'Category', 'Unit Size', 'Stock Quantity', 'Base Price', 'Selling Price', 'MRP', 'GST %', 'Expiry Date'];
+                    const csvContent = [headers, ...this.allItems.map(item => [
+                        item.itemId,
+                        item.itemName,
+                        item.brand,
+                        item.category,
+                        item.unitSize,
+                        item.stockQuantity,
+                        item.basePrice,
+                        item.sellingPrice,
+                        item.mrp,
+                        item.gst,
+                        item.expiryDate
+                    ])].map(row => row.map(cell => `"${cell.toString().replace(/"/g, '""')}"`).join(',')).join('\n');
+
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'kirana_inventory.csv';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+
+                    this.showToast('Inventory exported as CSV', 'success');
                 }
             }
-        }
 
-        // Global functions for table actions
-        function editItem(id) {
-            inventoryManager.showToast('Edit functionality - Redirect to edit form', 'success');
-            // Implement edit functionality
-        }
-
-        function deleteItem(id) {
-            if (confirm('Are you sure you want to delete this item?')) {
-                inventoryManager.showToast('Delete functionality - Remove from database', 'success');
-                // Implement delete functionality
+            // Global functions for table actions
+            function closeEditModal() {
+                inventoryManager.closeEditModal();
             }
-        }
 
-        function goBack() {
-            window.history.back();
-        }
+            function goBack() {
+                window.history.back();
+            }
 
-        function refreshInventory() {
-            inventoryManager.loadInventoryData();
-            inventoryManager.showToast('Inventory refreshed successfully!');
-        }
+            function refreshInventory() {
+                inventoryManager.loadInventoryData();
+                inventoryManager.showToast('Inventory refreshed successfully!');
+            }
 
-        function exportInventory() {
-            inventoryManager.showToast('Export functionality - Generate CSV/Excel', 'success');
-            // Implement export functionality
-        }
+            function exportInventory() {
+                inventoryManager.exportToCSV();
+            }
 
-        function clearFilters() {
-            inventoryManager.clearFilters();
-            inventoryManager.showToast('Filters cleared', 'success');
-        }
+            function clearFilters() {
+                inventoryManager.clearFilters();
+                inventoryManager.showToast('Filters cleared', 'success');
+            }
 
-        // Initialize the inventory manager
-        const inventoryManager = new InventoryTableManager();
-    </script>
+            const inventoryManager = new InventoryTableManager();
+        </script>
 
 </body>
 
